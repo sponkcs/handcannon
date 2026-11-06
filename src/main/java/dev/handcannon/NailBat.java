@@ -42,21 +42,22 @@ final class NailBat implements Listener {
     NailBat(HandCannonPlugin plugin) {
         this.plugin = plugin;
         batKey = new NamespacedKey(plugin, "nail_bat");
-        damageKey = new NamespacedKey(plugin, "nail_bat_damage");
-        speedKey = new NamespacedKey(plugin, "nail_bat_speed");
+        damageKey = NamespacedKey.minecraft("base_attack_damage");
+        speedKey = NamespacedKey.minecraft("base_attack_speed");
     }
 
     ItemStack create() {
         var cfg = plugin.getConfig();
         ItemStack it = new ItemStack(Material.STICK);
         ItemMeta m = it.getItemMeta();
-        m.displayName(Component.text("Nail Bat", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        m.lore(List.of(Component.text("Fully charged swings are home runs", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+        m.displayName(Component.text("Nail Bat", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
+        m.lore(List.of(Component.text("Batter up!", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
         m.setItemModel(NamespacedKey.fromString("handcannon:nail_bat"));
         m.setMaxStackSize(1);
-        // players punch for 1 and swing 4 times a second, so the modifiers are the difference from that
+        // players punch for 1 and swing 4 times a second, so the modifiers are the difference from that. Using the
+        // vanilla "base" modifier ids makes the tooltip show the totals (like a sword) rather than the differences.
         m.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier(damageKey,
-                cfg.getDouble("bat.damage", 1) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
+                cfg.getDouble("bat.damage", 2) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
         m.addAttributeModifier(Attribute.ATTACK_SPEED, new AttributeModifier(speedKey,
                 cfg.getDouble("bat.attack-speed", 0.9) - 4, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
         m.getPersistentDataContainer().set(batKey, PersistentDataType.BYTE, (byte) 1);

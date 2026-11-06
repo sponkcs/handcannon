@@ -381,21 +381,21 @@ GUN_DISPLAY = {
     "ground":                centred(GUN, (0, 90, 0), 0.34),
     "fixed":                 centred(GUN, (0, 90, 0), 0.55),          # item frames
     "head":                  centred(GUN, (0, 0, 0), 0.6, (0, 8, 0)),
-    "firstperson_righthand": centred(GUN, (0, 180, 0), 0.62, (4, -1, -6)),
-    "firstperson_lefthand":  centred(GUN, (0, 180, 0), 0.62, (4, -1, -6)),
-    "thirdperson_righthand": centred(GUN, (0, 180, 0), 0.62, (0, 3, -3)),
-    "thirdperson_lefthand":  centred(GUN, (0, 180, 0), 0.62, (0, 3, -3)),
+    "firstperson_righthand": centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
+    "firstperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
+    "thirdperson_righthand": centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
+    "thirdperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
 }
-# In hand, Minecraft points a model's +z away from the player, so the guns (built barrel to -z) turn 180 degrees.
+# In hand, a model's -z (north) points away from the player, so the guns (built barrel to -z) need no turn.
 TOMMY_DISPLAY = {
     "gui":                   centred(TOMMY, (0, 90, 0), 0.33),
     "ground":                centred(TOMMY, (0, 90, 0), 0.26),
     "fixed":                 centred(TOMMY, (0, 90, 0), 0.36),
     "head":                  centred(TOMMY, (0, 0, 0), 0.4, (0, 8, 0)),
-    "firstperson_righthand": centred(TOMMY, (0, 180, 0), 0.5, (3, -1, -4)),
-    "firstperson_lefthand":  centred(TOMMY, (0, 180, 0), 0.5, (3, -1, -4)),
-    "thirdperson_righthand": centred(TOMMY, (0, 180, 0), 0.5, (0, 3, -1)),
-    "thirdperson_lefthand":  centred(TOMMY, (0, 180, 0), 0.5, (0, 3, -1)),
+    "firstperson_righthand": centred(TOMMY, (0, 0, 0), 0.5, (3, -1, -4)),
+    "firstperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (3, -1, -4)),
+    "thirdperson_righthand": centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
+    "thirdperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
 }
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.

@@ -39,7 +39,7 @@ Hold right-click for full auto, about 10 bullets a second: 3 damage each (x1.5 a
 and a little muzzle climb. Its settings are under `tommy:` in `config.yml` and apply right away.
 
 ## Nail Bat
-A slow melee weapon that does 1 damage (half a heart), a bit under one swing a second. Wait for the attack
+A slow melee weapon that does one heart of damage, a bit under one swing a second. Wait for the attack
 indicator to fill before swinging and the hit is a home run: a crack and the target goes flying with a cloud trail. Damage and speed are stamped on each bat when it is
 given (`bat.damage`, `bat.attack-speed`); the home-run settings apply right away. The bat is a stick underneath,
 so it is kept out of crafting grids and furnaces.

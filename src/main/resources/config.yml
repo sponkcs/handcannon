@@ -14,7 +14,7 @@ tommy:                      # the Tommy Gun: hold right-click for full auto
   knockback: 0.15
   pitch-kick: 0.8           # degrees the view climbs per bullet
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
-  damage: 1.0               # per full-strength hit (a bare fist does 1, a diamond sword 7)
+  damage: 2.0               # per full-strength hit: 2 = one heart (a bare fist does 1, a diamond sword 7)
   attack-speed: 0.9         # swings per second at full strength (a sword is 1.6, an axe about 1.0)
   home-run-charge: 0.95     # how charged the swing must be (0-1) to be a home run
   home-run-power: 2.4       # how far a home run sends the target
