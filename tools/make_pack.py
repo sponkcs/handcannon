@@ -82,29 +82,38 @@ def round_prism(cx, cy, diameter, z0, z1, tex, end_tex=None):
         box((cx - w, cy - r, z0), (cx + w, cy + r, z1), tex, ft, rot)
 
 # barrel: short and fat (snubnose), lined up with the top chamber
-round_prism(8, 13.0, 4.6, -4.0, 4.6, "metal", end_tex="bore")
-box((6.6, 8.8, -3.6), (9.4, 11.2, 4.6), "metal")                 # full underlug
-box((7.4, 15.0, -3.4), (8.6, 16.8, -1.2), "metal")               # front sight blade
-# cylinder: fat and fluted
-round_prism(8, 10.5, 9.6, 4.6, 11.6, "cylinder")
-box((7.0, 9.5, 4.2), (9.0, 11.5, 4.7), "brass")                  # cylinder pin / ejector star
+round_prism(8, 13.0, 4.6, -6.0, 2.7, "metal", end_tex="bore")
+box((6.6, 8.8, -5.6), (9.4, 11.2, 2.7), "metal")                 # full underlug
+box((7.4, 15.0, -5.4), (8.6, 16.8, -3.2), "metal")               # front sight blade
+# cylinder: fat, fluted and long
+round_prism(8, 10.5, 9.6, 2.6, 12.0, "cylinder")
+box((7.0, 9.5, 2.2), (9.0, 11.5, 2.7), "brass")                  # cylinder pin / ejector star
 # frame
-box((6.0, 4.0, 3.6), (10.0, 13.0, 4.7), "metal")                 # front of frame (yoke)
-box((6.0, 4.0, 4.0), (10.0, 6.0, 12.0), "metal")                 # under the cylinder
-box((6.2, 15.0, 4.6), (9.8, 16.0, 15.6), "metal")                # top strap
-box((5.5, 4.0, 11.5), (10.5, 16.0, 16.5), "metal")               # recoil shield / rear frame
+box((6.0, 4.0, 1.6), (10.0, 13.0, 2.7), "metal")                 # front of frame (yoke)
+box((6.0, 4.0, 2.0), (10.0, 6.0, 12.0), "metal")                 # under the cylinder
+box((6.2, 15.0, 2.6), (9.8, 16.0, 15.6), "metal")                # top strap
+box((5.5, 4.0, 12.0), (10.5, 16.0, 16.5), "metal")               # recoil shield / rear frame
 box((7.2, 16.0, 14.4), (8.8, 16.6, 15.6), "dark")                # rear sight notch block
-# hammer with a spur
-box((7.0, 15.0, 15.6), (9.0, 17.6, 17.0), "dark")
-box((7.0, 16.6, 17.0), (9.0, 17.6, 19.0), "dark")
+# hammer: big, with a long checkered spur sweeping back
+box((6.7, 14.5, 15.4), (9.3, 19.4, 17.6), "dark")                # hammer body
+box((6.9, 18.0, 15.0), (9.1, 19.8, 17.6), "dark")                # rounded top of the hammer
+HAMMER_ROT = ("x", 22.5, (8, 18.6, 17.4))
+box((6.5, 17.6, 17.0), (9.5, 19.4, 21.2), "dark", rot=HAMMER_ROT)   # spur, tipped down at the back
+box((6.3, 18.0, 19.6), (9.7, 19.0, 21.6), "dark", rot=HAMMER_ROT)   # wide thumb pad at the end of the spur
 # trigger guard and trigger
 box((7.0, 1.4, 7.4), (9.0, 2.4, 14.2), "metal")
 box((7.0, 1.4, 7.4), (9.0, 5.6, 8.4), "metal")
 box((7.5, 2.0, 10.4), (8.5, 5.4, 11.4), "dark", rot=("x", -22.5, (8, 5, 11)))
-# grip, raked back, with a steel butt cap
+# grip, raked back, rounded: a core plus a wider-but-shallower and a deeper-but-narrower slab,
+# so the corners read as rounded from every side, with a palm swell and a rounded steel butt cap
 GRIP_ROT = ("x", -22.5, (8, 6, 16))
-box((5.4, -8.0, 13.4), (10.6, 5.0, 19.0), "wood", rot=GRIP_ROT)
-box((5.2, -9.0, 13.2), (10.8, -8.0, 19.2), "metal", rot=GRIP_ROT)
+box((5.6, -8.0, 13.6), (10.4, 5.0, 18.8), "wood", rot=GRIP_ROT)      # core
+box((5.2, -7.6, 14.2), (10.8, 4.6, 18.2), "wood", rot=GRIP_ROT)      # sides bulge out
+box((6.1, -7.6, 13.1), (9.9, 4.6, 19.3), "wood", rot=GRIP_ROT)       # front and back bulge out
+box((5.0, -5.0, 14.8), (11.0, 1.5, 17.6), "wood", rot=GRIP_ROT)      # palm swell
+box((5.5, -9.0, 13.9), (10.5, -8.0, 18.5), "metal", rot=GRIP_ROT)    # butt cap
+box((6.0, -9.4, 14.4), (10.0, -9.0, 18.0), "metal", rot=GRIP_ROT)    # butt cap rounding
+box((6.2, 3.0, 16.0), (9.8, 6.5, 19.2), "wood", rot=("x", -45, (8, 5, 16.5)))   # backstrap curve up into the frame
 box((6.5, 4.0, 12.8), (9.5, 6.0, 16.0), "metal")                  # grip frame strap under the hammer
 
 # ---------------- maths for preview + auto-centring ----------------
