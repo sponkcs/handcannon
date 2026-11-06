@@ -305,22 +305,22 @@ box((6.5, 9.2, -14.6), (9.5, 12.4, -12.0), "steel")                  # compensat
 box((6.9, 12.4, -14.0), (9.1, 12.8, -12.6), "dark")                  # compensator slots
 box((6.6, 9.4, -14.72), (9.4, 12.2, -14.62), "bore")                 # muzzle
 box((7.6, 12.4, -11.8), (8.4, 13.8, -10.8), "steel")                 # front sight blade
-# front pistol grip, raked forward
+# front pistol grip, straight down
 box((7.0, 9.0, -7.4), (9.0, 9.7, -3.6), "steel")                     # mount
-FG = ("x", 22.5, (8, 9.4, -5.5))
+FG = None
 box((6.7, 2.6, -6.8), (9.3, 9.2, -4.2), "walnut", rot=FG)
 box((6.4, 3.2, -6.4), (9.6, 8.6, -4.6), "walnut", rot=FG)            # rounded sides
 for y in (7.0, 5.4, 3.8):                                            # finger ridges
     box((6.9, y, -7.1), (9.1, y + 0.7, -6.6), "walnut", rot=FG)
-# the big drum
-# The flat faces are built from concentric raised steps (not a printed ring), so every layer lines up.
-round_prism_x(1.8, 5.4, 13.6, 5.0, 11.0, "drum_side")
-round_prism_x(1.8, 5.4, 14.2, 5.3, 5.8, "steel")                     # rolled rims
-round_prism_x(1.8, 5.4, 14.2, 10.2, 10.7, "steel")
-round_prism_x(1.8, 5.4, 11.0, 4.78, 11.22, "drum_plate")             # face plate
-round_prism_x(1.8, 5.4, 8.2, 4.56, 11.44, "drum_side")               # pressed centre
-round_prism_x(1.8, 5.4, 3.2, 4.32, 11.68, "polished")                # centre hub
-box((3.8, 1.2, 4.1), (4.2, 2.4, 6.7), "polished")                    # winding key (left side)
+# the big drum, its round face pointing forward (toward the muzzle). The face is built from concentric raised
+# steps (not a printed ring), so every layer lines up.
+round_prism(8, 1.8, 13.6, 2.4, 8.4, "drum_side")
+round_prism(8, 1.8, 14.2, 2.7, 3.2, "steel")                         # rolled rims
+round_prism(8, 1.8, 14.2, 7.6, 8.1, "steel")
+round_prism(8, 1.8, 11.0, 2.18, 8.62, "drum_plate")                  # face plate
+round_prism(8, 1.8, 8.2, 1.96, 8.84, "drum_side")                    # pressed centre
+round_prism(8, 1.8, 3.2, 1.72, 9.08, "polished")                     # centre hub
+box((6.7, 1.4, 1.3), (9.3, 2.2, 1.7), "polished")                    # winding key on the front
 box((6.6, 7.4, 1.6), (9.4, 8.2, 9.2), "steel")                       # magazine well
 # trigger guard, trigger and rear pistol grip
 box((7.0, 5.6, 12.4), (9.0, 6.4, 16.2), "steel")
