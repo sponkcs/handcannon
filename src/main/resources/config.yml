@@ -5,6 +5,14 @@ cooldown-ticks: 14          # time between shots (20 ticks = 1 s); shown as the 
 knockback: 1.2              # how hard a hit shoves the target (0 = vanilla knockback only)
 recoil: 0.45                # how hard firing shoves the shooter back (0 = off)
 pitch-kick: 6.0             # degrees the view kicks upward per shot (0 = off)
+tommy:                      # the Tommy Gun: hold right-click for full auto
+  damage: 3.0               # per bullet
+  headshot-multiplier: 1.5
+  range: 48
+  spread: 2.5               # degrees of wobble per bullet
+  shots-per-click: 2        # holding right-click repeats every 4 ticks; this many bullets per repeat (2 = 10 a second)
+  knockback: 0.15
+  pitch-kick: 0.8           # degrees the view climbs per bullet
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 1.0               # per full-strength hit (a bare fist does 1, a diamond sword 7)
   attack-speed: 0.9         # swings per second at full strength (a sword is 1.6, an axe about 1.0)

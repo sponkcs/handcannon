@@ -258,6 +258,83 @@ NAILS = [  # (height, direction 0-7, tilt, shows point?, length)
 for n in NAILS: nail(*n)
 BAT = elements
 
+# ---------------- geometry: tommy gun ----------------
+# Cartoon proportions: a chunky receiver, a finned barrel, a front pistol grip and a huge drum magazine.
+# Built like the hand cannon: barrel toward north (-z), stock at the back (+z).
+def tex_steel(): return tex_metal((44, 48, 60), 7)
+def tex_drum():
+    im = tex_metal((58, 62, 74), 6, edge=False); px = im.load()
+    for x in range(16):   # a pressed ring around the face of the drum
+        for y in range(16):
+            r = math.hypot(x - 7.5, y - 7.5)
+            if 5.6 < r < 6.6: px[x, y] = shade((58, 62, 74), 0.7)
+            elif 6.6 <= r < 7.2: px[x, y] = shade((58, 62, 74), 1.3)
+    return im
+TOMMY_TEX = {"steel": tex_steel(), "polished": tex_metal((176, 180, 188), 5), "dark": flat((22, 22, 26)),
+             "bore": tex_bore(), "walnut": tex_wood((128, 70, 38), 0.72), "drum": tex_drum(), "drum_side": tex_metal((58, 62, 74), 6, edge=False)}
+for k, im in TOMMY_TEX.items(): im.save(path("assets", NS, "textures", "item", "tommy_gun", k + ".png"))
+FULL_UV.add("drum")
+
+elements = []
+def round_prism_x(cy, cz, diameter, x0, x1, tex, faces_tex=None):
+    """Roundish prism along x (for the drum): crossed slabs, plus the pair turned 45 degrees, ends staggered."""
+    r, w = diameter / 2, diameter * 0.46 / 2
+    origin = ((x0 + x1) / 2, cy, cz)
+    i = 0
+    for rot in (None, ("x", 45, origin)):
+        for hy, hz in ((r, w), (w, r)):
+            d = 0.03 * i
+            box((x0 - d, cy - hy, cz - hz), (x1 + d, cy + hy, cz + hz), tex, faces_tex, rot)
+            i += 1
+
+# receiver
+box((6.0, 8.0, 1.0), (10.0, 13.0, 16.0), "steel")
+box((6.4, 13.0, 3.0), (9.6, 13.6, 15.0), "steel")                    # raised top
+box((7.4, 13.6, 6.0), (8.6, 14.8, 7.6), "polished")                  # charging knob
+box((6.8, 13.6, 13.2), (9.2, 15.4, 14.6), "steel")                   # rear sight
+box((7.6, 14.6, 13.1), (8.4, 15.5, 14.7), "dark")                    # sight notch
+box((10.0, 10.2, 3.6), (10.15, 12.0, 8.6), "dark")                   # ejection port (right side)
+box((5.9, 9.6, 10.0), (6.0, 10.6, 12.0), "polished")                 # selector lever (left side)
+# finned barrel with a chunky compensator
+round_prism(8, 10.8, 2.4, -12.0, 1.2, "steel")
+for z in (-9.6, -8.4, -7.2, -6.0, -4.8, -3.6, -2.4, -1.2):          # cooling fins
+    round_prism(8, 10.8, 3.8, z, z + 0.6, "steel")
+round_prism(8, 10.8, 3.4, -0.2, 1.4, "steel")                        # barrel nut
+box((6.5, 9.2, -14.6), (9.5, 12.4, -12.0), "steel")                  # compensator
+box((6.9, 12.4, -14.0), (9.1, 12.8, -12.6), "dark")                  # compensator slots
+box((6.6, 9.4, -14.72), (9.4, 12.2, -14.62), "bore")                 # muzzle
+box((7.6, 12.4, -11.8), (8.4, 13.8, -10.8), "steel")                 # front sight blade
+# front pistol grip, raked forward
+box((7.0, 9.0, -7.4), (9.0, 9.7, -3.6), "steel")                     # mount
+FG = ("x", 22.5, (8, 9.4, -5.5))
+box((6.7, 2.6, -6.8), (9.3, 9.2, -4.2), "walnut", rot=FG)
+box((6.4, 3.2, -6.4), (9.6, 8.6, -4.6), "walnut", rot=FG)            # rounded sides
+for y in (7.0, 5.4, 3.8):                                            # finger ridges
+    box((6.9, y, -7.1), (9.1, y + 0.7, -6.6), "walnut", rot=FG)
+# the big drum
+round_prism_x(1.8, 5.4, 13.6, 5.0, 11.0, "drum_side", {"east": "drum", "west": "drum"})
+round_prism_x(1.8, 5.4, 14.2, 5.3, 5.8, "steel")                     # rolled rims
+round_prism_x(1.8, 5.4, 14.2, 10.2, 10.7, "steel")
+round_prism_x(1.8, 5.4, 3.2, 4.4, 11.6, "polished")                  # centre hub
+box((4.0, 1.2, 4.1), (4.4, 2.4, 6.7), "polished")                    # winding key (left side)
+box((6.6, 7.4, 1.6), (9.4, 8.2, 9.2), "steel")                       # magazine well
+# trigger guard, trigger and rear pistol grip
+box((7.0, 5.6, 12.4), (9.0, 6.4, 16.2), "steel")
+box((7.0, 5.6, 12.0), (9.0, 8.0, 12.8), "steel")
+box((7.5, 6.2, 13.6), (8.5, 8.0, 14.4), "polished", rot=("x", 22.5, (8, 7.5, 14)))   # trigger
+PG = ("x", -22.5, (8, 8, 17.6))
+box((6.4, 0.6, 15.8), (9.6, 8.4, 19.2), "walnut", rot=PG)
+box((6.0, 1.0, 16.3), (10.0, 7.6, 18.7), "walnut", rot=PG)           # rounded sides
+for y in (5.8, 3.9, 2.0):
+    box((6.6, y, 15.4), (9.4, y + 0.7, 15.9), "walnut", rot=PG)
+# wooden stock, dropping toward the shoulder, with a steel butt plate
+box((6.4, 8.4, 16.0), (9.6, 12.8, 21.6), "walnut")                   # wrist
+ST = ("x", 22.5, (8, 11, 20.8))
+box((6.2, 5.6, 20.6), (9.8, 12.2, 30.2), "walnut", rot=ST)
+box((5.9, 6.2, 21.4), (10.1, 11.6, 29.6), "walnut", rot=ST)          # rounded sides
+box((6.0, 5.4, 30.2), (10.0, 12.4, 30.8), "steel", rot=ST)           # butt plate
+TOMMY = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -293,10 +370,21 @@ GUN_DISPLAY = {
     "ground":                centred(GUN, (0, 90, 0), 0.34),
     "fixed":                 centred(GUN, (0, 90, 0), 0.55),          # item frames
     "head":                  centred(GUN, (0, 0, 0), 0.6, (0, 8, 0)),
-    "firstperson_righthand": centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
-    "firstperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
-    "thirdperson_righthand": centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
-    "thirdperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
+    "firstperson_righthand": centred(GUN, (0, 180, 0), 0.62, (4, -1, -6)),
+    "firstperson_lefthand":  centred(GUN, (0, 180, 0), 0.62, (4, -1, -6)),
+    "thirdperson_righthand": centred(GUN, (0, 180, 0), 0.62, (0, 3, -3)),
+    "thirdperson_lefthand":  centred(GUN, (0, 180, 0), 0.62, (0, 3, -3)),
+}
+# In hand, Minecraft points a model's +z away from the player, so the guns (built barrel to -z) turn 180 degrees.
+TOMMY_DISPLAY = {
+    "gui":                   centred(TOMMY, (0, 90, 0), 0.34),
+    "ground":                centred(TOMMY, (0, 90, 0), 0.26),
+    "fixed":                 centred(TOMMY, (0, 90, 0), 0.36),
+    "head":                  centred(TOMMY, (0, 0, 0), 0.4, (0, 8, 0)),
+    "firstperson_righthand": centred(TOMMY, (0, 180, 0), 0.5, (3, -1, -4)),
+    "firstperson_lefthand":  centred(TOMMY, (0, 180, 0), 0.5, (3, -1, -4)),
+    "thirdperson_righthand": centred(TOMMY, (0, 180, 0), 0.5, (0, 3, -1)),
+    "thirdperson_lefthand":  centred(TOMMY, (0, 180, 0), 0.5, (0, 3, -1)),
 }
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
@@ -318,6 +406,7 @@ def write_item(name, els, tex, display, particle):
     wjson(path("assets", NS, "items", name + ".json"), {"model": {"type": "minecraft:model", "model": f"{NS}:item/{name}"}})
 write_item("hand_cannon", GUN, TEX, GUN_DISPLAY, "frame")
 write_item("nail_bat", BAT, BAT_TEX, BAT_DISPLAY, "wood")
+write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -371,6 +460,7 @@ def render(els, tex, yaw, pitch, roll=0, size=420, pad=30):
         d.polygon([(size / 2 + (p[0] - cx) * s, size / 2 - (p[1] - cy) * s) for p in v], fill=col + (255,), outline=col + (255,))
     return im
 rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 180, 8), render(GUN, TEX, 0, 0)],
+        [render(TOMMY, TOMMY_TEX, -90, 0), render(TOMMY, TOMMY_TEX, -130, 18), render(TOMMY, TOMMY_TEX, 180, 8), render(TOMMY, TOMMY_TEX, -60, -15)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):

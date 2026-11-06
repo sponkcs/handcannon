@@ -1,7 +1,8 @@
 # HandCannon (Paper 26.2, Java 25)
 
-A comically oversized snubnose revolver (right-click to fire, no ammo, no reloading) and a nail-studded
-baseball bat (a fully charged swing is a home run), both with 3D models.
+A comically oversized snubnose revolver (right-click to fire), a cartoon Tommy gun with a huge drum magazine
+(hold right-click for full auto) and a nail-studded baseball bat (a fully charged swing is a home run), all with
+3D models. No ammo, no reloading.
 
 ![preview](preview.png)
 
@@ -23,7 +24,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|bat] [player]   give a Hand Cannon (default) or a Nail Bat (op)
+    /hc give [gun|tommy|bat] [player]   give a Hand Cannon (default), Tommy Gun or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -32,6 +33,10 @@ Permission `handcannon.use` (everyone by default) is needed to fire.
 Right-click (air, blocks or point-blank on a mob) fires a hitscan shot: big muzzle blast, smoke trail, block chips or
 crits where it lands. Hits do `damage` (x `headshot-multiplier` at head height) and shove the target; the shooter gets
 pushed back and their view kicks up. The cooldown shows as the sweep on the item. All of it is in `config.yml`.
+
+## Tommy Gun
+Hold right-click for full auto, about 10 bullets a second: 3 damage each (x1.5 at head height), a little spread
+and a little muzzle climb. Its settings are under `tommy:` in `config.yml` and apply right away.
 
 ## Nail Bat
 A slow melee weapon that does 1 damage (half a heart), a bit under one swing a second. Wait for the attack

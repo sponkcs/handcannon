@@ -29,6 +29,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,17 +42,23 @@ import org.bukkit.util.Vector;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.List;
 import java.util.UUID;
 
 public final class HandCannonPlugin extends JavaPlugin implements Listener, TabExecutor {
-    private NamespacedKey gunKey;
+    private NamespacedKey gunKey, tommyKey;
     private NailBat bat;
+    /** Last tick each player fired the Tommy gun, so one click can't fire twice (both hands, block + entity events). */
+    private final Map<UUID, Integer> lastTommyShot = new HashMap<>();
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         gunKey = new NamespacedKey(this, "hand_cannon");
+        tommyKey = new NamespacedKey(this, "tommy_gun");
         bat = new NailBat(this);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(bat, this);
@@ -58,115 +66,167 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (cmd != null) { cmd.setExecutor(this); cmd.setTabCompleter(this); }
     }
 
-    // ---------------------------------------------------------------- item
+    // ---------------------------------------------------------------- items
 
-    ItemStack createGun() {
+    private ItemStack makeGun(NamespacedKey key, String name, String hint, String model) {
         ItemStack it = new ItemStack(Material.CARROT_ON_A_STICK);   // right-click on air always reaches the server
         ItemMeta m = it.getItemMeta();
-        m.displayName(Component.text("Hand Cannon", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-        m.lore(List.of(Component.text("Right-click to fire", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
-        m.setItemModel(NamespacedKey.fromString("handcannon:hand_cannon"));
-        m.getPersistentDataContainer().set(gunKey, PersistentDataType.BYTE, (byte) 1);
+        m.displayName(Component.text(name, NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        m.lore(List.of(Component.text(hint, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+        m.setItemModel(NamespacedKey.fromString(model));
+        m.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
         it.setItemMeta(m);
         return it;
     }
+    ItemStack createGun() { return makeGun(gunKey, "Hand Cannon", "Right-click to fire", "handcannon:hand_cannon"); }
+    ItemStack createTommy() { return makeGun(tommyKey, "Tommy Gun", "Hold right-click to fire", "handcannon:tommy_gun"); }
 
-    boolean isGun(ItemStack it) {
-        return it != null && it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(gunKey, PersistentDataType.BYTE);
+    private static boolean has(ItemStack it, NamespacedKey key) {
+        return it != null && it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.BYTE);
     }
+    boolean isGun(ItemStack it) { return has(it, gunKey); }
+    boolean isTommy(ItemStack it) { return has(it, tommyKey); }
+    private boolean isAnyGun(ItemStack it) { return isGun(it) || isTommy(it); }
 
     // ---------------------------------------------------------------- triggers
 
     @EventHandler(ignoreCancelled = false)
     public void onInteract(PlayerInteractEvent e) {
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (!isGun(e.getItem())) return;
+        if (!isAnyGun(e.getItem())) return;
         e.setUseItemInHand(Event.Result.DENY);
         e.setUseInteractedBlock(Event.Result.DENY);
         Player p = e.getPlayer();
-        if (e.getHand() == EquipmentSlot.OFF_HAND && isGun(p.getInventory().getItemInMainHand())) return;
-        fire(p, e.getItem());
+        if (e.getHand() == EquipmentSlot.OFF_HAND && isAnyGun(p.getInventory().getItemInMainHand())) return;
+        trigger(p, e.getItem());
     }
 
     @EventHandler
     public void onInteractEntity(PlayerInteractEntityEvent e) {   // point-blank: clicking a mob does not raise PlayerInteractEvent
         Player p = e.getPlayer();
         ItemStack it = p.getInventory().getItem(e.getHand());
-        if (!isGun(it)) return;
+        if (!isAnyGun(it)) return;
         e.setCancelled(true);
-        if (e.getHand() == EquipmentSlot.OFF_HAND && isGun(p.getInventory().getItemInMainHand())) return;
-        fire(p, it);
+        if (e.getHand() == EquipmentSlot.OFF_HAND && isAnyGun(p.getInventory().getItemInMainHand())) return;
+        trigger(p, it);
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) { sendPack(e.getPlayer()); }
 
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) { lastTommyShot.remove(e.getPlayer().getUniqueId()); }
+
+    private void trigger(Player p, ItemStack gun) {
+        if (!p.hasPermission("handcannon.use")) return;
+        if (isGun(gun)) {
+            if (p.hasCooldown(gun)) return;
+            p.setCooldown(gun, Math.max(1, getConfig().getInt("cooldown-ticks", 14)));
+            shoot(p, Stats.cannon(getConfig()));
+            return;
+        }
+        // Tommy gun: holding right-click repeats the click every 4 ticks; each click fires a short burst
+        int now = Bukkit.getCurrentTick();
+        Integer last = lastTommyShot.get(p.getUniqueId());
+        if (last != null && now - last < 3) return;
+        lastTommyShot.put(p.getUniqueId(), now);
+        Stats st = Stats.tommy(getConfig());
+        shoot(p, st);
+        int extra = Math.max(1, getConfig().getInt("tommy.shots-per-click", 2)) - 1;
+        for (int i = 1; i <= extra; i++) {
+            int delay = i * 4 / (extra + 1);
+            Bukkit.getScheduler().runTaskLater(this, () -> {
+                if (p.isOnline() && !p.isDead() && isTommy(p.getInventory().getItemInMainHand())) shoot(p, st);
+            }, Math.max(1, delay));
+        }
+    }
+
     // ---------------------------------------------------------------- shooting
 
-    private void fire(Player p, ItemStack gun) {
-        if (!p.hasPermission("handcannon.use") || p.hasCooldown(gun)) return;
-        var cfg = getConfig();
-        p.setCooldown(gun, Math.max(1, cfg.getInt("cooldown-ticks", 14)));
+    /** Per-gun numbers, read fresh from config.yml on every shot. */
+    record Stats(boolean big, double damage, double headshot, double range, double spread,
+                 double knockback, double recoil, float kick) {
+        static Stats cannon(FileConfiguration c) {
+            return new Stats(true, c.getDouble("damage", 16), c.getDouble("headshot-multiplier", 1.5), c.getDouble("range", 64), 0,
+                    c.getDouble("knockback", 1.2), c.getDouble("recoil", 0.45), (float) c.getDouble("pitch-kick", 6));
+        }
+        static Stats tommy(FileConfiguration c) {
+            return new Stats(false, c.getDouble("tommy.damage", 3), c.getDouble("tommy.headshot-multiplier", 1.5),
+                    c.getDouble("tommy.range", 48), c.getDouble("tommy.spread", 2.5), c.getDouble("tommy.knockback", 0.15),
+                    0, (float) c.getDouble("tommy.pitch-kick", 0.8));
+        }
+    }
 
+    private void shoot(Player p, Stats st) {
         World w = p.getWorld();
         Location eye = p.getEyeLocation();
         Vector dir = eye.getDirection().normalize();
-        double range = cfg.getDouble("range", 64);
-        RayTraceResult hit = w.rayTrace(eye, dir, range, FluidCollisionMode.NEVER, true, 0.3, ent -> canHit(p, ent));
-        Vector end = hit != null ? hit.getHitPosition() : eye.toVector().add(dir.clone().multiply(range));
+        if (st.spread() > 0) {   // wobble the shot inside a cone of the given half-angle
+            double t = Math.tan(Math.toRadians(st.spread()));
+            var r = ThreadLocalRandom.current();
+            dir.add(new Vector(r.nextGaussian(), r.nextGaussian(), r.nextGaussian()).multiply(t * 0.5)).normalize();
+        }
+        RayTraceResult hit = w.rayTrace(eye, dir, st.range(), FluidCollisionMode.NEVER, true, 0.3, ent -> canHit(p, ent));
+        Vector end = hit != null ? hit.getHitPosition() : eye.toVector().add(dir.clone().multiply(st.range()));
 
         // muzzle: in front of the shooter, a little right and down, where the barrel sits on screen
         Vector right = dir.clone().crossProduct(new Vector(0, 1, 0));
         if (right.lengthSquared() < 1e-6) right = new Vector(1, 0, 0); else right.normalize();
-        Location muzzle = eye.clone().add(dir.clone().multiply(1.1)).add(right.multiply(0.35)).add(0, -0.25, 0);
-        w.spawnParticle(Particle.EXPLOSION, muzzle, 1, 0, 0, 0, 0);
-        w.spawnParticle(Particle.FLAME, muzzle, 8, 0.08, 0.08, 0.08, 0.04);
-        w.spawnParticle(Particle.LARGE_SMOKE, muzzle, 10, 0.12, 0.12, 0.12, 0.03);
-        w.playSound(muzzle, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.3f, 1.6f);
-        w.playSound(muzzle, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1.6f, 0.6f);
+        Location muzzle = eye.clone().add(dir.clone().multiply(st.big() ? 1.1 : 1.3)).add(right.multiply(0.35)).add(0, -0.25, 0);
+        if (st.big()) {
+            w.spawnParticle(Particle.EXPLOSION, muzzle, 1, 0, 0, 0, 0);
+            w.spawnParticle(Particle.FLAME, muzzle, 8, 0.08, 0.08, 0.08, 0.04);
+            w.spawnParticle(Particle.LARGE_SMOKE, muzzle, 10, 0.12, 0.12, 0.12, 0.03);
+            w.playSound(muzzle, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 1.3f, 1.6f);
+            w.playSound(muzzle, Sound.ENTITY_FIREWORK_ROCKET_LARGE_BLAST, SoundCategory.PLAYERS, 1.6f, 0.6f);
+        } else {
+            w.spawnParticle(Particle.FLAME, muzzle, 2, 0.04, 0.04, 0.04, 0.02);
+            w.spawnParticle(Particle.SMOKE, muzzle, 2, 0.05, 0.05, 0.05, 0.01);
+            w.playSound(muzzle, Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 0.9f, 1.8f);
+            w.playSound(muzzle, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.2f, 2.0f);
+        }
 
-        // smoke trail from the muzzle to whatever was hit
+        // smoke trail from the muzzle to whatever was hit (sparser for the Tommy gun)
         Vector from = muzzle.toVector(), path = end.clone().subtract(from);
-        double len = path.length();
+        double len = path.length(), step = st.big() ? 0.5 : 1.5;
         if (len > 0.01) {
             path.multiply(1 / len);
-            for (double d = 0.6; d < len; d += 0.5)
+            for (double d = 0.6; d < len; d += step)
                 w.spawnParticle(Particle.SMOKE, from.clone().add(path.clone().multiply(d)).toLocation(w), 1, 0, 0, 0, 0);
         }
 
         Location at = end.toLocation(w);
         if (hit != null && hit.getHitEntity() instanceof LivingEntity target) {
-            double dmg = cfg.getDouble("damage", 16);
-            boolean head = end.getY() >= target.getEyeLocation().getY() - 0.25;
-            if (head) {
-                dmg *= cfg.getDouble("headshot-multiplier", 1.5);
-                p.playSound(p, Sound.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, 1f, 1.4f);
+            double dmg = st.damage();
+            if (end.getY() >= target.getEyeLocation().getY() - 0.25) {
+                dmg *= st.headshot();
+                p.playSound(p, Sound.ENTITY_ARROW_HIT_PLAYER, SoundCategory.PLAYERS, st.big() ? 1f : 0.4f, 1.4f);
             }
             target.setNoDamageTicks(0);
             target.damage(dmg, p);
-            double kb = cfg.getDouble("knockback", 1.2);
-            if (kb > 0) {
+            if (st.knockback() > 0) {
                 Vector push = dir.clone().setY(0);
-                if (push.lengthSquared() > 1e-6) target.setVelocity(target.getVelocity().add(push.normalize().multiply(kb).setY(0.35)));
+                if (push.lengthSquared() > 1e-6)
+                    target.setVelocity(target.getVelocity().add(push.normalize().multiply(st.knockback()).setY(st.big() ? 0.35 : 0.05)));
             }
-            w.spawnParticle(Particle.CRIT, at, 20, 0.2, 0.2, 0.2, 0.3);
-            w.spawnParticle(Particle.DAMAGE_INDICATOR, at, 6, 0.2, 0.2, 0.2, 0.1);
+            w.spawnParticle(Particle.CRIT, at, st.big() ? 20 : 4, 0.2, 0.2, 0.2, 0.3);
+            if (st.big()) w.spawnParticle(Particle.DAMAGE_INDICATOR, at, 6, 0.2, 0.2, 0.2, 0.1);
         } else if (hit != null && hit.getHitBlock() != null) {
             Block b = hit.getHitBlock();
-            w.spawnParticle(Particle.BLOCK, at, 24, 0.1, 0.1, 0.1, 0, b.getBlockData());
-            w.spawnParticle(Particle.LARGE_SMOKE, at, 4, 0.05, 0.05, 0.05, 0.02);
-            w.playSound(at, Sound.BLOCK_DECORATED_POT_SHATTER, SoundCategory.PLAYERS, 0.7f, 1.4f);
+            w.spawnParticle(Particle.BLOCK, at, st.big() ? 24 : 6, 0.1, 0.1, 0.1, 0, b.getBlockData());
+            if (st.big()) {
+                w.spawnParticle(Particle.LARGE_SMOKE, at, 4, 0.05, 0.05, 0.05, 0.02);
+                w.playSound(at, Sound.BLOCK_DECORATED_POT_SHATTER, SoundCategory.PLAYERS, 0.7f, 1.4f);
+            }
         }
 
-        // recoil: the gun is huge, so it shoves the shooter back and kicks the view up
-        double recoil = cfg.getDouble("recoil", 0.45);
-        if (recoil > 0) {
-            Vector back = dir.clone().multiply(-recoil);
+        // recoil: shove the shooter back and kick the view up
+        if (st.recoil() > 0) {
+            Vector back = dir.clone().multiply(-st.recoil());
             back.setY(back.getY() * 0.5 + 0.08);
             p.setVelocity(p.getVelocity().add(back));
         }
-        float kick = (float) cfg.getDouble("pitch-kick", 6);
-        if (kick > 0) p.setRotation(p.getYaw(), Math.max(-90f, p.getPitch() - kick));
+        if (st.kick() > 0) p.setRotation(p.getYaw(), Math.max(-90f, p.getPitch() - st.kick()));
     }
 
     private static boolean canHit(Player shooter, Entity ent) {
@@ -199,17 +259,17 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         String sub = args.length == 0 ? "give" : args[0].toLowerCase();
         switch (sub) {
             case "give" -> {
-                // /hc give [gun|bat] [player]; the item can be left out (gun)
+                // /hc give [gun|tommy|bat] [player]; the item can be left out (gun)
                 int i = 1;
                 String what = "gun";
-                if (args.length > i && (args[i].equalsIgnoreCase("gun") || args[i].equalsIgnoreCase("bat"))) what = args[i++].toLowerCase();
+                if (args.length > i && List.of("gun", "tommy", "bat").contains(args[i].toLowerCase())) what = args[i++].toLowerCase();
                 Player target;
                 if (args.length > i) target = Bukkit.getPlayerExact(args[i]);
                 else target = sender instanceof Player self ? self : null;
-                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|bat] <player>", NamedTextColor.RED)); return true; }
-                ItemStack item = what.equals("bat") ? bat.create() : createGun();
+                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|bat] <player>", NamedTextColor.RED)); return true; }
+                ItemStack item = switch (what) { case "bat" -> bat.create(); case "tommy" -> createTommy(); default -> createGun(); };
                 target.getInventory().addItem(item).values().forEach(left -> target.getWorld().dropItem(target.getLocation(), left));
-                sender.sendMessage(Component.text("Gave a " + (what.equals("bat") ? "Nail Bat" : "Hand Cannon") + " to " + target.getName(), NamedTextColor.GOLD));
+                sender.sendMessage(Component.text("Gave a " + switch (what) { case "bat" -> "Nail Bat"; case "tommy" -> "Tommy Gun"; default -> "Hand Cannon"; } + " to " + target.getName(), NamedTextColor.GOLD));
             }
             case "reload" -> {
                 reloadConfig();
@@ -220,7 +280,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
                 if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " pack <player>", NamedTextColor.RED)); return true; }
                 sendPack(target);
             }
-            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|bat] [player] | reload | pack [player]", NamedTextColor.RED));
+            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|bat] [player] | reload | pack [player]", NamedTextColor.RED));
         }
         return true;
     }
@@ -231,7 +291,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (args.length == 1) {
             for (String s : List.of("give", "reload", "pack")) if (s.startsWith(args[0].toLowerCase())) out.add(s);
         } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            for (String s : List.of("gun", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
+            for (String s : List.of("gun", "tommy", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[1].toLowerCase())) out.add(pl.getName());
         } else if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[2].toLowerCase())) out.add(pl.getName());
