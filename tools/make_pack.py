@@ -271,7 +271,8 @@ def tex_drum():
             elif 6.6 <= r < 7.2: px[x, y] = shade((58, 62, 74), 1.3)
     return im
 TOMMY_TEX = {"steel": tex_steel(), "polished": tex_metal((176, 180, 188), 5), "dark": flat((22, 22, 26)),
-             "bore": tex_bore(), "walnut": tex_wood((128, 70, 38), 0.72), "drum": tex_drum(), "drum_side": tex_metal((58, 62, 74), 6, edge=False)}
+             "bore": tex_bore(), "walnut": tex_wood((128, 70, 38), 0.72), "drum": tex_drum(), "drum_side": tex_metal((58, 62, 74), 6, edge=False),
+             "drum_plate": tex_metal((46, 50, 60), 5, edge=False)}
 for k, im in TOMMY_TEX.items(): im.save(path("assets", NS, "textures", "item", "tommy_gun", k + ".png"))
 FULL_UV.add("drum")
 
@@ -312,11 +313,14 @@ box((6.4, 3.2, -6.4), (9.6, 8.6, -4.6), "walnut", rot=FG)            # rounded s
 for y in (7.0, 5.4, 3.8):                                            # finger ridges
     box((6.9, y, -7.1), (9.1, y + 0.7, -6.6), "walnut", rot=FG)
 # the big drum
-round_prism_x(1.8, 5.4, 13.6, 5.0, 11.0, "drum_side", {"east": "drum", "west": "drum"})
+# The flat faces are built from concentric raised steps (not a printed ring), so every layer lines up.
+round_prism_x(1.8, 5.4, 13.6, 5.0, 11.0, "drum_side")
 round_prism_x(1.8, 5.4, 14.2, 5.3, 5.8, "steel")                     # rolled rims
 round_prism_x(1.8, 5.4, 14.2, 10.2, 10.7, "steel")
-round_prism_x(1.8, 5.4, 3.2, 4.4, 11.6, "polished")                  # centre hub
-box((4.0, 1.2, 4.1), (4.4, 2.4, 6.7), "polished")                    # winding key (left side)
+round_prism_x(1.8, 5.4, 11.0, 4.78, 11.22, "drum_plate")             # face plate
+round_prism_x(1.8, 5.4, 8.2, 4.56, 11.44, "drum_side")               # pressed centre
+round_prism_x(1.8, 5.4, 3.2, 4.32, 11.68, "polished")                # centre hub
+box((3.8, 1.2, 4.1), (4.2, 2.4, 6.7), "polished")                    # winding key (left side)
 box((6.6, 7.4, 1.6), (9.4, 8.2, 9.2), "steel")                       # magazine well
 # trigger guard, trigger and rear pistol grip
 box((7.0, 5.6, 12.4), (9.0, 6.4, 16.2), "steel")
