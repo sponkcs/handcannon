@@ -259,7 +259,8 @@ for n in NAILS: nail(*n)
 BAT = elements
 
 # ---------------- geometry: tommy gun ----------------
-# Cartoon proportions: a chunky receiver, a finned barrel, a front pistol grip and a huge drum magazine.
+# Modelled on the M1-style layout (plain barrel, wooden forend, boxy receiver, raked pistol grip, long stock),
+# with cartoon proportions: everything chunkier, and a huge drum magazine.
 # Built like the hand cannon: barrel toward north (-z), stock at the back (+z).
 def tex_steel(): return tex_metal((44, 48, 60), 7)
 def tex_drum():
@@ -271,7 +272,7 @@ def tex_drum():
             elif 6.6 <= r < 7.2: px[x, y] = shade((58, 62, 74), 1.3)
     return im
 TOMMY_TEX = {"steel": tex_steel(), "polished": tex_metal((176, 180, 188), 5), "dark": flat((22, 22, 26)),
-             "bore": tex_bore(), "walnut": tex_wood((128, 70, 38), 0.72), "drum": tex_drum(), "drum_side": tex_metal((58, 62, 74), 6, edge=False),
+             "bore": tex_bore(), "walnut": tex_wood((150, 90, 58), 0.78), "walnut_dark": tex_wood((96, 56, 34), 0.8), "drum": tex_drum(), "drum_side": tex_metal((58, 62, 74), 6, edge=False),
              "drum_plate": tex_metal((46, 50, 60), 5, edge=False)}
 for k, im in TOMMY_TEX.items(): im.save(path("assets", NS, "textures", "item", "tommy_gun", k + ".png"))
 FULL_UV.add("drum")
@@ -284,34 +285,27 @@ def round_prism_x(cy, cz, diameter, x0, x1, tex, faces_tex=None):
     i = 0
     for rot in (None, ("x", 45, origin)):
         for hy, hz in ((r, w), (w, r)):
-            d = 0.03 * i
-            box((x0 - d, cy - hy, cz - hz), (x1 + d, cy + hy, cz + hz), tex, faces_tex, rot)
-            i += 1
-
-# receiver
-box((6.0, 8.0, 1.0), (10.0, 13.0, 16.0), "steel")
-box((6.4, 13.0, 3.0), (9.6, 13.6, 15.0), "steel")                    # raised top
-box((7.4, 13.6, 6.0), (8.6, 14.8, 7.6), "polished")                  # charging knob
-box((6.8, 13.6, 13.2), (9.2, 15.4, 14.6), "steel")                   # rear sight
-box((7.6, 14.6, 13.1), (8.4, 15.5, 14.7), "dark")                    # sight notch
-box((10.0, 10.2, 3.6), (10.15, 12.0, 8.6), "dark")                   # ejection port (right side)
-box((5.9, 9.6, 10.0), (6.0, 10.6, 12.0), "polished")                 # selector lever (left side)
-# finned barrel with a chunky compensator
-round_prism(8, 10.8, 2.4, -12.0, 1.2, "steel")
-for z in (-9.6, -8.4, -7.2, -6.0, -4.8, -3.6, -2.4, -1.2):          # cooling fins
-    round_prism(8, 10.8, 3.8, z, z + 0.6, "steel")
-round_prism(8, 10.8, 3.4, -0.2, 1.4, "steel")                        # barrel nut
-box((6.5, 9.2, -14.6), (9.5, 12.4, -12.0), "steel")                  # compensator
-box((6.9, 12.4, -14.0), (9.1, 12.8, -12.6), "dark")                  # compensator slots
-box((6.6, 9.4, -14.72), (9.4, 12.2, -14.62), "bore")                 # muzzle
-box((7.6, 12.4, -11.8), (8.4, 13.8, -10.8), "steel")                 # front sight blade
-# front pistol grip, straight down
-box((7.0, 9.0, -7.4), (9.0, 9.7, -3.6), "steel")                     # mount
-FG = None
-box((6.7, 2.6, -6.8), (9.3, 9.2, -4.2), "walnut", rot=FG)
-box((6.4, 3.2, -6.4), (9.6, 8.6, -4.6), "walnut", rot=FG)            # rounded sides
-for y in (7.0, 5.4, 3.8):                                            # finger ridges
-    box((6.9, y, -7.1), (9.1, y + 0.7, -6.6), "walnut", rot=FG)
+            d# receiver: a chunky box with protective ears round the rear sight
+box((6.0, 8.4, 0.0), (10.0, 12.6, 15.0), "steel")
+box((6.6, 9.0, -1.0), (9.4, 12.2, 0.0), "steel")                     # front collar where the barrel screws in
+box((6.3, 12.6, 11.6), (7.3, 14.4, 14.4), "steel")                   # sight ears
+box((8.7, 12.6, 11.6), (9.7, 14.4, 14.4), "steel")
+box((7.3, 12.6, 12.6), (8.7, 13.6, 13.6), "dark")                    # rear sight aperture between the ears
+box((10.0, 10.6, 5.0), (10.9, 11.7, 6.4), "polished")                # charging knob (right side)
+box((10.0, 10.0, 7.2), (10.15, 11.6, 10.8), "dark")                  # ejection port (right side)
+box((5.85, 8.8, 10.4), (6.0, 9.6, 11.8), "polished")                 # fire selector (left side)
+box((5.85, 8.8, 12.4), (6.0, 9.6, 13.6), "polished")                 # safety (left side)
+box((6.4, 7.2, 9.2), (9.6, 8.4, 15.0), "steel")                      # trigger housing
+# long plain barrel with a front sight
+round_prism(8, 11.0, 2.6, -15.0, -1.0, "steel")
+round_prism(8, 11.0, 3.2, -14.6, -13.2, "steel")                     # front sight base
+box((7.4, 12.4, -14.4), (8.6, 14.0, -13.4), "steel")                 # front sight blade
+box((6.9, 9.9, -15.3), (9.1, 12.1, -15.2), "bore")                   # muzzle
+# horizontal wooden forend under the barrel
+box((6.4, 7.6, -10.4), (9.6, 10.6, -1.2), "walnut")
+box((6.0, 8.0, -10.0), (10.0, 10.2, -1.6), "walnut")                 # rounded sides
+box((5.95, 8.9, -9.4), (10.05, 9.3, -2.2), "walnut_dark")            # finger groove along each side
+box((7.6, 6.6, -8.4), (8.4, 7.6, -7.6), "polished")                  # sling swivel
 # the big drum, its round face pointing forward (toward the muzzle). The face is built from concentric raised
 # steps (not a printed ring), so every layer lines up.
 round_prism(8, 1.8, 13.6, 2.4, 8.4, "drum_side")
@@ -321,22 +315,29 @@ round_prism(8, 1.8, 11.0, 2.18, 8.62, "drum_plate")                  # face plat
 round_prism(8, 1.8, 8.2, 1.96, 8.84, "drum_side")                    # pressed centre
 round_prism(8, 1.8, 3.2, 1.72, 9.08, "polished")                     # centre hub
 box((6.7, 1.4, 1.3), (9.3, 2.2, 1.7), "polished")                    # winding key on the front
-box((6.6, 7.4, 1.6), (9.4, 8.2, 9.2), "steel")                       # magazine well
-# trigger guard, trigger and rear pistol grip
-box((7.0, 5.6, 12.4), (9.0, 6.4, 16.2), "steel")
-box((7.0, 5.6, 12.0), (9.0, 8.0, 12.8), "steel")
-box((7.5, 6.2, 13.6), (8.5, 8.0, 14.4), "polished", rot=("x", 22.5, (8, 7.5, 14)))   # trigger
-PG = ("x", -22.5, (8, 8, 17.6))
-box((6.4, 0.6, 15.8), (9.6, 8.4, 19.2), "walnut", rot=PG)
-box((6.0, 1.0, 16.3), (10.0, 7.6, 18.7), "walnut", rot=PG)           # rounded sides
-for y in (5.8, 3.9, 2.0):
-    box((6.6, y, 15.4), (9.4, y + 0.7, 15.9), "walnut", rot=PG)
-# wooden stock, dropping toward the shoulder, with a steel butt plate
-box((6.4, 8.4, 16.0), (9.6, 12.8, 21.6), "walnut")                   # wrist
-ST = ("x", 22.5, (8, 11, 20.8))
-box((6.2, 5.6, 20.6), (9.8, 12.2, 30.2), "walnut", rot=ST)
-box((5.9, 6.2, 21.4), (10.1, 11.6, 29.6), "walnut", rot=ST)          # rounded sides
-box((6.0, 5.4, 30.2), (10.0, 12.4, 30.8), "steel", rot=ST)           # butt plate
+box((6.6, 7.4, 1.6), (9.4, 8.6, 9.2), "steel")                       # magazine well
+# trigger guard and trigger
+box((7.0, 4.8, 10.2), (9.0, 5.6, 13.8), "steel")
+box((7.0, 5.2, 9.6), (9.0, 7.4, 10.4), "steel")
+box((7.0, 4.6, 9.8), (9.0, 5.6, 11.0), "steel", rot=("x", 45, (8, 5.2, 10.4)))   # rounded front corner
+box((7.5, 5.6, 11.2), (8.5, 7.4, 12.0), "polished", rot=("x", 22.5, (8, 7, 11.6)))  # trigger
+# pistol grip raked back, finger grooves on the front, flared at the bottom
+PG = ("x", -22.5, (8, 7.6, 15.4))
+box((6.4, 0.8, 13.6), (9.6, 7.6, 17.2), "walnut", rot=PG)
+box((6.0, 1.2, 14.1), (10.0, 7.2, 16.7), "walnut", rot=PG)           # rounded sides
+for y in (5.6, 4.0, 2.4):                                            # finger ridges
+    box((6.7, y, 13.1), (9.3, y + 0.8, 13.6), "walnut", rot=PG)
+box((5.9, 0.0, 13.3), (10.1, 0.8, 17.6), "walnut", rot=PG)           # flared bottom
+# long stock: a narrow wrist off the back of the receiver, dropping toward a tall butt with a steel plate
+box((6.6, 8.4, 15.0), (9.4, 12.2, 21.0), "walnut")                   # wrist
+box((9.4, 9.6, 17.8), (9.55, 10.4, 18.6), "polished")                # stock bolt
+ST = ("x", 22.5, (8, 11.6, 20.0))
+box((6.5, 8.0, 19.0), (9.5, 12.0, 30.0), "walnut", rot=ST)
+box((6.2, 8.4, 19.6), (9.8, 11.6, 29.6), "walnut", rot=ST)           # rounded sides
+box((6.5, 5.6, 25.6), (9.5, 8.0, 30.0), "walnut", rot=ST)            # butt gets taller toward the shoulder
+box((6.2, 6.0, 26.2), (9.8, 8.4, 29.6), "walnut", rot=ST)
+box((6.4, 5.4, 30.0), (9.6, 12.2, 30.6), "steel", rot=ST)            # butt plate
+box((7.6, 4.6, 27.8), (8.4, 5.6, 28.6), "polished", rot=ST)          # sling swivel
 TOMMY = elements
 
 # ---------------- maths for preview + auto-centring ----------------
@@ -381,7 +382,7 @@ GUN_DISPLAY = {
 }
 # In hand, Minecraft points a model's +z away from the player, so the guns (built barrel to -z) turn 180 degrees.
 TOMMY_DISPLAY = {
-    "gui":                   centred(TOMMY, (0, 90, 0), 0.34),
+    "gui":                   centred(TOMMY, (0, 90, 0), 0.33),
     "ground":                centred(TOMMY, (0, 90, 0), 0.26),
     "fixed":                 centred(TOMMY, (0, 90, 0), 0.36),
     "head":                  centred(TOMMY, (0, 0, 0), 0.4, (0, 8, 0)),

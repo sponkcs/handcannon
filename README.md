@@ -1,6 +1,6 @@
 # HandCannon (Paper 26.2, Java 25)
 
-A comically oversized snubnose revolver (right-click to fire), a cartoon Tommy gun with a huge drum magazine
+A comically oversized snubnose revolver (right-click to fire), a cartoon M1-style Tommy gun with a huge drum magazine
 (hold right-click for full auto) and a nail-studded baseball bat (a fully charged swing is a home run), all with
 3D models. No ammo, no reloading.
 
