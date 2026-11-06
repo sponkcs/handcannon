@@ -305,7 +305,13 @@ box((6.9, 9.9, -15.3), (9.1, 12.1, -15.2), "bore")                   # muzzle
 box((6.4, 7.6, -10.4), (9.6, 10.6, -1.2), "walnut")
 box((6.0, 8.0, -10.0), (10.0, 10.2, -1.6), "walnut")                 # rounded sides
 box((5.95, 8.9, -9.4), (10.05, 9.3, -2.2), "walnut_dark")            # finger groove along each side
-box((7.6, 6.6, -8.4), (8.4, 7.6, -7.6), "polished")                  # sling swivel
+box((7.6, 6.6, -10.0), (8.4, 7.6, -9.2), "polished")                 # sling swivel
+# vertical front grip hanging straight down from the forend
+box((6.7, 1.4, -7.4), (9.3, 7.7, -4.6), "walnut")
+box((6.4, 2.0, -7.0), (9.6, 7.2, -5.0), "walnut")                    # rounded sides
+for y in (5.8, 4.2, 2.6):                                            # finger ridges on the front
+    box((6.9, y, -7.9), (9.1, y + 0.7, -7.4), "walnut")
+box((6.5, 1.0, -7.2), (9.5, 1.4, -4.8), "walnut_dark")               # base
 # the big drum, its round face pointing forward (toward the muzzle). The face is built from concentric raised
 # steps (not a printed ring), so every layer lines up.
 round_prism(8, 1.8, 13.6, 2.4, 8.4, "drum_side")
