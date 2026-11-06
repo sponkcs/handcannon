@@ -2,11 +2,11 @@ name: HandCannon
 version: ${version}
 main: dev.handcannon.HandCannonPlugin
 api-version: '26.2'
-description: "A comically oversized snubnose revolver with a 3D model. Right-click to fire."
+description: "A comically oversized snubnose revolver and a nail bat, with 3D models."
 commands:
   handcannon:
-    description: Give the Hand Cannon, reload the config, or resend the resource pack
-    usage: /handcannon [give|reload|pack] [player]
+    description: Give the Hand Cannon or Nail Bat, reload the config, or resend the resource pack
+    usage: /handcannon give [gun|bat] [player] | reload | pack [player]
     permission: handcannon.admin
     aliases: [hc]
 permissions:

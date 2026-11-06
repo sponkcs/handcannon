@@ -5,7 +5,13 @@ cooldown-ticks: 14          # time between shots (20 ticks = 1 s); shown as the 
 knockback: 1.2              # how hard a hit shoves the target (0 = vanilla knockback only)
 recoil: 0.45                # how hard firing shoves the shooter back (0 = off)
 pitch-kick: 6.0             # degrees the view kicks upward per shot (0 = off)
+bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
+  damage: 9.0               # per full-strength hit (a diamond sword does 7)
+  attack-speed: 0.9         # swings per second at full strength (a sword is 1.6, an axe about 1.0)
+  home-run-charge: 0.95     # how charged the swing must be (0-1) to be a home run
+  home-run-power: 2.4       # how far a home run sends the target
+  home-run-lift: 1.1        # how high it goes
 resource-pack:
-  url: ""                   # public link to handcannon-resourcepack.zip
+  url: ""                   # public link to handcannon-resourcepack.zip (both items)
   sha1: ""                  # 40-character sha1 of the zip (printed by tools/make_pack.py)
   required: false

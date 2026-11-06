@@ -1,6 +1,7 @@
 # HandCannon (Paper 26.2, Java 25)
 
-A comically oversized snubnose revolver with a 3D model. Right-click to fire. No ammo, no reloading.
+A comically oversized snubnose revolver (right-click to fire, no ammo, no reloading) and a nail-studded
+baseball bat (a fully charged swing is a home run), both with 3D models.
 
 ![preview](preview.png)
 
@@ -22,7 +23,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [player]       give a Hand Cannon (op)
+    /hc give [gun|bat] [player]   give a Hand Cannon (default) or a Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -31,3 +32,10 @@ Permission `handcannon.use` (everyone by default) is needed to fire.
 Right-click (air, blocks or point-blank on a mob) fires a hitscan shot: big muzzle blast, smoke trail, block chips or
 crits where it lands. Hits do `damage` (x `headshot-multiplier` at head height) and shove the target; the shooter gets
 pushed back and their view kicks up. The cooldown shows as the sweep on the item. All of it is in `config.yml`.
+
+## Nail Bat
+A heavy, slow melee weapon: 9 damage at full strength, a bit under one swing a second. Wait for the attack
+indicator to fill before swinging and the hit is a home run: a crack, a burst of crits, "HOME RUN!" on your
+action bar, and the target goes flying with a cloud trail. Damage and speed are stamped on each bat when it is
+given (`bat.damage`, `bat.attack-speed`); the home-run settings apply right away. The bat is a stick underneath,
+so it is kept out of crafting grids and furnaces.

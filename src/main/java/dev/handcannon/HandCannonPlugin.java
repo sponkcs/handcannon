@@ -45,12 +45,15 @@ import java.util.UUID;
 
 public final class HandCannonPlugin extends JavaPlugin implements Listener, TabExecutor {
     private NamespacedKey gunKey;
+    private NailBat bat;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         gunKey = new NamespacedKey(this, "hand_cannon");
+        bat = new NailBat(this);
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(bat, this);
         var cmd = getCommand("handcannon");
         if (cmd != null) { cmd.setExecutor(this); cmd.setTabCompleter(this); }
     }
@@ -196,12 +199,17 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         String sub = args.length == 0 ? "give" : args[0].toLowerCase();
         switch (sub) {
             case "give" -> {
+                // /hc give [gun|bat] [player]; the item can be left out (gun)
+                int i = 1;
+                String what = "gun";
+                if (args.length > i && (args[i].equalsIgnoreCase("gun") || args[i].equalsIgnoreCase("bat"))) what = args[i++].toLowerCase();
                 Player target;
-                if (args.length >= 2) target = Bukkit.getPlayerExact(args[1]);
+                if (args.length > i) target = Bukkit.getPlayerExact(args[i]);
                 else target = sender instanceof Player self ? self : null;
-                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give <player>", NamedTextColor.RED)); return true; }
-                target.getInventory().addItem(createGun()).values().forEach(left -> target.getWorld().dropItem(target.getLocation(), left));
-                sender.sendMessage(Component.text("Gave a Hand Cannon to " + target.getName(), NamedTextColor.GOLD));
+                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|bat] <player>", NamedTextColor.RED)); return true; }
+                ItemStack item = what.equals("bat") ? bat.create() : createGun();
+                target.getInventory().addItem(item).values().forEach(left -> target.getWorld().dropItem(target.getLocation(), left));
+                sender.sendMessage(Component.text("Gave a " + (what.equals("bat") ? "Nail Bat" : "Hand Cannon") + " to " + target.getName(), NamedTextColor.GOLD));
             }
             case "reload" -> {
                 reloadConfig();
@@ -212,7 +220,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
                 if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " pack <player>", NamedTextColor.RED)); return true; }
                 sendPack(target);
             }
-            default -> sender.sendMessage(Component.text("Usage: /" + label + " [give|reload|pack] [player]", NamedTextColor.RED));
+            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|bat] [player] | reload | pack [player]", NamedTextColor.RED));
         }
         return true;
     }
@@ -222,7 +230,12 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         List<String> out = new ArrayList<>();
         if (args.length == 1) {
             for (String s : List.of("give", "reload", "pack")) if (s.startsWith(args[0].toLowerCase())) out.add(s);
-        } else if (args.length == 2 && !args[0].equalsIgnoreCase("reload")) {
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
+            for (String s : List.of("gun", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
+            for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[1].toLowerCase())) out.add(pl.getName());
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
+            for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[2].toLowerCase())) out.add(pl.getName());
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("pack")) {
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[1].toLowerCase())) out.add(pl.getName());
         }
         return out;
