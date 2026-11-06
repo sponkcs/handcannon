@@ -1,0 +1,11 @@
+damage: 16.0                # per shot (2 = one heart)
+headshot-multiplier: 1.5    # applied when the shot lands at head height
+range: 64                   # blocks
+cooldown-ticks: 14          # time between shots (20 ticks = 1 s); shown as the cooldown sweep on the item
+knockback: 1.2              # how hard a hit shoves the target (0 = vanilla knockback only)
+recoil: 0.45                # how hard firing shoves the shooter back (0 = off)
+pitch-kick: 6.0             # degrees the view kicks upward per shot (0 = off)
+resource-pack:
+  url: ""                   # public link to handcannon-resourcepack.zip
+  sha1: ""                  # 40-character sha1 of the zip (printed by tools/make_pack.py)
+  required: false
