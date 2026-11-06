@@ -56,7 +56,7 @@ final class NailBat implements Listener {
         m.setMaxStackSize(1);
         // players punch for 1 and swing 4 times a second, so the modifiers are the difference from that
         m.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier(damageKey,
-                cfg.getDouble("bat.damage", 9) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
+                cfg.getDouble("bat.damage", 1) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
         m.addAttributeModifier(Attribute.ATTACK_SPEED, new AttributeModifier(speedKey,
                 cfg.getDouble("bat.attack-speed", 0.9) - 4, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
         m.getPersistentDataContainer().set(batKey, PersistentDataType.BYTE, (byte) 1);
@@ -92,9 +92,7 @@ final class NailBat implements Listener {
         if (dir.lengthSquared() < 1e-6) dir = new Vector(1, 0, 0);
         Vector launch = dir.normalize().multiply(cfg.getDouble("bat.home-run-power", 2.4)).setY(cfg.getDouble("bat.home-run-lift", 1.1));
         w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_LAUNCH, SoundCategory.PLAYERS, 1.2f, 0.8f);
-        w.spawnParticle(Particle.CRIT, at, 30, 0.3, 0.3, 0.3, 0.6);
         w.spawnParticle(Particle.EXPLOSION, at, 1, 0, 0, 0, 0);
-        p.sendActionBar(Component.text("HOME RUN!", NamedTextColor.GOLD, TextDecoration.BOLD));
 
         // launch next tick, after vanilla has applied its own knockback, then leave a cloud trail while it flies
         new BukkitRunnable() {

@@ -34,8 +34,7 @@ crits where it lands. Hits do `damage` (x `headshot-multiplier` at head height) 
 pushed back and their view kicks up. The cooldown shows as the sweep on the item. All of it is in `config.yml`.
 
 ## Nail Bat
-A heavy, slow melee weapon: 9 damage at full strength, a bit under one swing a second. Wait for the attack
-indicator to fill before swinging and the hit is a home run: a crack, a burst of crits, "HOME RUN!" on your
-action bar, and the target goes flying with a cloud trail. Damage and speed are stamped on each bat when it is
+A slow melee weapon that does 1 damage (half a heart), a bit under one swing a second. Wait for the attack
+indicator to fill before swinging and the hit is a home run: a crack and the target goes flying with a cloud trail. Damage and speed are stamped on each bat when it is
 given (`bat.damage`, `bat.attack-speed`); the home-run settings apply right away. The bat is a stick underneath,
 so it is kept out of crafting grids and furnaces.
