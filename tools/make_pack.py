@@ -92,22 +92,27 @@ def box(frm, to, tex, faces_tex=None, rot=None):
     elements.append(e)
 
 def round_prism(cx, cy, diameter, z0, z1, tex, faces_tex=None):
-    """A roundish prism along z: two crossed slabs, plus the same pair turned 45 degrees (looks octagonal end-on)."""
+    """A roundish prism along z: two crossed slabs, plus the same pair turned 45 degrees (looks octagonal end-on).
+    Each slab's ends are pushed out a touch further than the last so no two end faces share a plane (no z-fighting)."""
     r, w = diameter / 2, diameter * 0.46 / 2
     origin = (cx, cy, (z0 + z1) / 2)
+    i = 0
     for rot in (None, ("z", 45, origin)):
-        box((cx - r, cy - w, z0), (cx + r, cy + w, z1), tex, faces_tex, rot)
-        box((cx - w, cy - r, z0), (cx + w, cy + r, z1), tex, faces_tex, rot)
+        for half_x, half_y in ((r, w), (w, r)):
+            d = 0.04 * i
+            box((cx - half_x, cy - half_y, z0 - d), (cx + half_x, cy + half_y, z1 + d), tex, faces_tex, rot)
+            i += 1
 
 # barrel: short, fat and round (snubnose) with a flat sighting rib on top
-round_prism(8, 13.0, 4.6, -6.0, 2.7, "frame", {"north": "bore"})
+round_prism(8, 13.0, 4.6, -6.0, 2.7, "frame")
+box((6.4, 11.4, -6.26), (9.6, 14.6, -6.16), "bore")                  # muzzle: one cap carries the bore, just in front
 box((7.0, 14.9, -6.0), (9.0, 15.8, 2.7), "frame")                    # top rib
 box((7.4, 15.6, -5.9), (8.6, 17.2, -4.0), "frame")                   # ramped front sight
 box((7.35, 16.3, -5.7), (8.65, 17.0, -5.0), "orange")                # sight insert
 # full-length underlug with the ejector rod showing through a slot
 box((6.6, 8.6, -5.8), (9.4, 11.4, 2.7), "frame")
 box((6.5, 9.4, -3.6), (9.5, 10.6, 1.6), "dark")                      # slot
-box((6.45, 9.75, -3.4), (9.55, 10.25, 1.6), "polished")              # ejector rod
+box((6.45, 9.75, -3.4), (9.55, 10.25, 1.5), "polished")              # ejector rod
 box((6.4, 9.5, -3.5), (9.6, 10.5, -2.4), "knurl")                    # knurled rod tip
 # cylinder: fat and long, long flutes, bevelled front
 FLUTES = {"east": "cyl_h", "west": "cyl_h", "up": "cyl_v", "down": "cyl_v"}
@@ -116,7 +121,7 @@ round_prism(8, 10.5, 8.6, 2.4, 3.0, "cylinder")                      # bevel
 box((7.2, 9.7, 2.0), (8.8, 11.3, 2.4), "polished")                   # centre pin / ejector star
 # frame
 box((6.0, 4.0, 1.6), (10.0, 13.6, 2.6), "frame")                     # yoke
-box((6.0, 4.0, 2.0), (10.0, 6.0, 12.0), "frame")                     # under the cylinder
+box((6.0, 4.0, 2.6), (10.0, 6.0, 12.0), "frame")                     # under the cylinder
 box((6.2, 15.0, 2.6), (9.8, 16.2, 15.4), "frame")                    # top strap
 box((5.5, 4.0, 12.0), (10.5, 16.0, 16.4), "frame")                   # recoil shield / rear frame
 box((6.6, 16.2, 12.6), (9.4, 17.6, 15.2), "black")                   # adjustable rear sight
@@ -140,14 +145,14 @@ box((7.5, 2.0, 10.6), (8.5, 4.0, 11.6), "polished", rot=("x", 22.5, (8, 4, 11.1)
 GRIP_ROT = ("x", -22.5, (8, 6, 16))
 box((5.6, -8.0, 13.6), (10.4, 5.2, 18.8), "wood", rot=GRIP_ROT)      # core
 box((5.2, -7.6, 14.2), (10.8, 4.6, 18.2), "wood", rot=GRIP_ROT)      # sides bulge out
-box((6.1, -7.6, 13.1), (9.9, 4.8, 19.4), "wood", rot=GRIP_ROT)       # front and back bulge out
+box((6.1, -7.7, 13.1), (9.9, 4.8, 19.4), "wood", rot=GRIP_ROT)       # front and back bulge out
 box((4.9, -5.2, 15.0), (11.1, 1.8, 18.4), "wood", rot=GRIP_ROT)      # palm swell
 for y in (1.6, -1.6, -4.8):                                          # finger ridges on the front strap
     box((6.6, y, 12.8), (9.4, y + 1.2, 13.4), "wood", rot=GRIP_ROT)
 box((6.2, 3.0, 16.0), (9.8, 6.6, 19.6), "wood", rot=("x", -45, (8, 5, 16.6)))   # backstrap curve up behind the hammer
 box((5.0, -9.6, 12.8), (11.0, -7.8, 20.0), "wood_dark", rot=GRIP_ROT)  # flared base
 box((5.6, -10.2, 13.4), (10.4, -9.6, 19.4), "wood_dark", rot=GRIP_ROT)
-box((6.5, 4.0, 12.8), (9.5, 6.0, 16.0), "frame")                     # grip frame under the hammer
+box((6.5, 3.9, 12.8), (9.5, 6.0, 16.0), "frame")                     # grip frame under the hammer
 
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
