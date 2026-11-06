@@ -15,6 +15,7 @@ Drop the jar in `plugins/`.
 Host the zip at a public URL, then set `resource-pack.url` and `resource-pack.sha1` in `plugins/HandCannon/config.yml`
 and run `/hc reload`. Players are asked to accept it on join (`/hc pack [player]` resends it).
 Without the pack the gun shows as a missing-texture block.
+Set `FINISH` at the top of the textures section to `stainless` (bright frame, dark cylinder), `blued` or `black`.
 
 The model is built from boxes in `tools/make_pack.py` (barrel points north, grip at the back). How it sits in first
 person, third person, the inventory and item frames is the `DISPLAY` table near the bottom of the geometry section:

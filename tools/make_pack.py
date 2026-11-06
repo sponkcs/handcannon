@@ -15,46 +15,66 @@ def path(*p):
 def wjson(p, obj): json.dump(obj, open(p, "w"), indent=1)
 
 # ---------------- textures (16x16, procedural) ----------------
+# FINISH picks the metal colours: "stainless" (bright frame, dark cylinder), "blued" (deep blue-black) or "black"
+FINISH = "stainless"
+PALETTES = {
+    "stainless": {"frame": (176, 180, 186), "cylinder": (78, 80, 86), "polished": (206, 208, 212)},
+    "blued":     {"frame": (34, 40, 58), "cylinder": (34, 40, 58), "polished": (150, 152, 158)},
+    "black":     {"frame": (40, 41, 44), "cylinder": (88, 90, 96), "polished": (176, 180, 186)},
+}
+PAL = PALETTES[FINISH]
 rng = random.Random(7)
 def clamp(v): return max(0, min(255, int(v)))
-def tex_metal(base=(58, 62, 72), noise=10):
+def shade(c, f): return tuple(clamp(v * f) for v in c[:3]) + (255,)
+def tex_metal(base, noise=8, edge=True):
     im = Image.new("RGBA", (16, 16)); px = im.load()
     for y in range(16):
         for x in range(16):
-            n = rng.randint(-noise, noise) + (6 if y < 3 else 0) - (6 if y > 12 else 0)
+            n = rng.randint(-noise, noise) + (5 if y < 4 else 0) - (5 if y > 12 else 0)
             px[x, y] = tuple(clamp(c + n) for c in base) + (255,)
-    for x in range(16): px[x, 1] = tuple(clamp(c + 38) for c in base) + (255,)   # polished edge highlight
+    if edge:
+        for x in range(16): px[x, 1] = shade(base, 1.25)
     return im
-def tex_cylinder():
-    im = tex_metal((66, 70, 80)); px = im.load()
-    for x in (2, 7, 12):   # flutes: dark grooves with a light lip
-        for y in range(2, 14):
-            px[x, y] = (32, 34, 40, 255); px[x + 1, y] = (40, 42, 50, 255); px[x + 2, y] = (96, 100, 112, 255)
+def tex_flutes(base, vertical):
+    """Long flutes that stop short of both ends of the cylinder. Rows on the side faces, columns on top/bottom."""
+    im = tex_metal(base, 6, edge=False); px = im.load()
+    for lane in (3, 9):
+        for t in range(2, 14):
+            for k, f in ((0, 0.55), (1, 0.45), (2, 0.6), (3, 1.3)):
+                x, y = (lane + k, t) if vertical else (t, lane + k)
+                px[x, y] = shade(base, f)
     return im
-def tex_wood():
-    im = Image.new("RGBA", (16, 16)); px = im.load()
+def tex_knurl(base):
+    im = tex_metal(base, 4, edge=False); px = im.load()
     for y in range(16):
         for x in range(16):
-            g = math.sin((x + y * 0.35) * 1.3) * 10 + rng.randint(-6, 6)
-            px[x, y] = (clamp(112 + g), clamp(62 + g * 0.6), clamp(32 + g * 0.3), 255)
-    for y in range(3, 13):   # checkering panel
-        for x in range(3, 13):
-            if (x + y) % 3 == 0 or (x - y) % 3 == 0:
-                r, g, b, a = px[x, y]; px[x, y] = (clamp(r * 0.62), clamp(g * 0.62), clamp(b * 0.62), 255)
-    for x in range(16): px[x, 0] = (70, 38, 20, 255); px[x, 15] = (70, 38, 20, 255)
+            if (x + y) % 2 == 0: px[x, y] = shade(base, 0.6)
+    return im
+def tex_wood(base, streak):
+    """Smooth polished hardwood, grain running along the grip."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    lines = [rng.uniform(0, 16) for _ in range(5)]
+    for y in range(16):
+        for x in range(16):
+            g = math.sin(x * 1.7 + math.sin(y * 0.4) * 1.5) * 9 + rng.randint(-4, 4)
+            c = [base[0] + g, base[1] + g * 0.6, base[2] + g * 0.35]
+            if any(abs(x - (l + math.sin(y * 0.5 + l) * 0.8)) < 0.55 for l in lines): c = [v * streak for v in c]
+            if x in (4, 5): c = [v * 1.18 for v in c]          # polish highlight
+            px[x, y] = tuple(clamp(v) for v in c) + (255,)
     return im
 def tex_bore():
-    im = tex_metal((58, 62, 72)); d = ImageDraw.Draw(im)
-    d.ellipse((2, 2, 13, 13), fill=(20, 20, 24, 255), outline=(110, 114, 124, 255))
-    d.ellipse((5, 5, 10, 10), fill=(4, 4, 6, 255))
+    im = tex_metal(PAL["frame"], edge=False); d = ImageDraw.Draw(im)
+    d.ellipse((1, 1, 14, 14), fill=shade(PAL["frame"], 0.8), outline=shade(PAL["frame"], 1.2))   # crowned muzzle
+    d.ellipse((4, 4, 11, 11), fill=(10, 10, 12, 255))
     return im
-def tex_dark(): return tex_metal((30, 32, 38), 5)
-def tex_brass():
-    im = tex_metal((176, 132, 52), 14); d = ImageDraw.Draw(im)
-    return im
+def flat(c, noise=3): return tex_metal(c, noise, edge=False)
 
-TEX = {"metal": tex_metal(), "cylinder": tex_cylinder(), "wood": tex_wood(), "bore": tex_bore(),
-       "dark": tex_dark(), "brass": tex_brass()}
+TEX = {"frame": tex_metal(PAL["frame"]), "cylinder": tex_metal(PAL["cylinder"], 6, edge=False),
+       "cyl_h": tex_flutes(PAL["cylinder"], False), "cyl_v": tex_flutes(PAL["cylinder"], True),
+       "polished": tex_metal(PAL["polished"], 5), "knurl": tex_knurl(PAL["polished"]),
+       "bore": tex_bore(), "dark": flat((24, 24, 28)), "black": flat((30, 30, 32), 2), "orange": flat((255, 110, 30), 6),
+       "wood": tex_wood((176, 82, 52), 0.72), "wood_dark": tex_wood((104, 70, 44), 0.75)}
+FULL_UV = {"bore", "cyl_h", "cyl_v", "knurl"}   # these textures are stretched over the whole face
 for k, im in TEX.items(): im.save(path("assets", NS, "textures", "item", "hand_cannon", k + ".png"))
 
 # ---------------- geometry ----------------
@@ -66,55 +86,69 @@ def box(frm, to, tex, faces_tex=None, rot=None):
     dims = {"north": (sx, sy), "south": (sx, sy), "east": (sz, sy), "west": (sz, sy), "up": (sx, sz), "down": (sx, sz)}
     for f, (w, h) in dims.items():
         t = (faces_tex or {}).get(f, tex)
-        uv = [0, 0, 16, 16] if t == "bore" else [0, 0, round(min(16, w), 2), round(min(16, h), 2)]
+        uv = [0, 0, 16, 16] if t in FULL_UV else [0, 0, round(min(16, w), 2), round(min(16, h), 2)]
         faces[f] = {"uv": uv, "texture": "#" + t}
     e = {"from": [round(v, 3) for v in frm], "to": [round(v, 3) for v in to], "faces": faces}
     if rot: e["rotation"] = {"axis": rot[0], "angle": rot[1], "origin": list(rot[2])}
     elements.append(e)
 
-def round_prism(cx, cy, diameter, z0, z1, tex, end_tex=None):
+def round_prism(cx, cy, diameter, z0, z1, tex, faces_tex=None):
     """A roundish prism along z: two crossed slabs, plus the same pair turned 45 degrees (looks octagonal end-on)."""
     r, w = diameter / 2, diameter * 0.46 / 2
-    ft = {"north": end_tex, "south": end_tex} if end_tex else None
     origin = (cx, cy, (z0 + z1) / 2)
     for rot in (None, ("z", 45, origin)):
-        box((cx - r, cy - w, z0), (cx + r, cy + w, z1), tex, ft, rot)
-        box((cx - w, cy - r, z0), (cx + w, cy + r, z1), tex, ft, rot)
+        box((cx - r, cy - w, z0), (cx + r, cy + w, z1), tex, faces_tex, rot)
+        box((cx - w, cy - r, z0), (cx + w, cy + r, z1), tex, faces_tex, rot)
 
-# barrel: short and fat (snubnose), lined up with the top chamber
-round_prism(8, 13.0, 4.6, -6.0, 2.7, "metal", end_tex="bore")
-box((6.6, 8.8, -5.6), (9.4, 11.2, 2.7), "metal")                 # full underlug
-box((7.4, 15.0, -5.4), (8.6, 16.8, -3.2), "metal")               # front sight blade
-# cylinder: fat, fluted and long
-round_prism(8, 10.5, 9.6, 2.6, 12.0, "cylinder")
-box((7.0, 9.5, 2.2), (9.0, 11.5, 2.7), "brass")                  # cylinder pin / ejector star
+# barrel: short, fat and round (snubnose) with a flat sighting rib on top
+round_prism(8, 13.0, 4.6, -6.0, 2.7, "frame", {"north": "bore"})
+box((7.0, 14.9, -6.0), (9.0, 15.8, 2.7), "frame")                    # top rib
+box((7.4, 15.6, -5.9), (8.6, 17.2, -4.0), "frame")                   # ramped front sight
+box((7.35, 16.3, -5.7), (8.65, 17.0, -5.0), "orange")                # sight insert
+# full-length underlug with the ejector rod showing through a slot
+box((6.6, 8.6, -5.8), (9.4, 11.4, 2.7), "frame")
+box((6.5, 9.4, -3.6), (9.5, 10.6, 1.6), "dark")                      # slot
+box((6.45, 9.75, -3.4), (9.55, 10.25, 1.6), "polished")              # ejector rod
+box((6.4, 9.5, -3.5), (9.6, 10.5, -2.4), "knurl")                    # knurled rod tip
+# cylinder: fat and long, long flutes, bevelled front
+FLUTES = {"east": "cyl_h", "west": "cyl_h", "up": "cyl_v", "down": "cyl_v"}
+round_prism(8, 10.5, 9.6, 3.0, 12.0, "cylinder", FLUTES)
+round_prism(8, 10.5, 8.6, 2.4, 3.0, "cylinder")                      # bevel
+box((7.2, 9.7, 2.0), (8.8, 11.3, 2.4), "polished")                   # centre pin / ejector star
 # frame
-box((6.0, 4.0, 1.6), (10.0, 13.0, 2.7), "metal")                 # front of frame (yoke)
-box((6.0, 4.0, 2.0), (10.0, 6.0, 12.0), "metal")                 # under the cylinder
-box((6.2, 15.0, 2.6), (9.8, 16.0, 15.6), "metal")                # top strap
-box((5.5, 4.0, 12.0), (10.5, 16.0, 16.5), "metal")               # recoil shield / rear frame
-box((7.2, 16.0, 14.4), (8.8, 16.6, 15.6), "dark")                # rear sight notch block
-# hammer: big, with a long checkered spur sweeping back
-box((6.7, 14.5, 15.4), (9.3, 19.4, 17.6), "dark")                # hammer body
-box((6.9, 18.0, 15.0), (9.1, 19.8, 17.6), "dark")                # rounded top of the hammer
+box((6.0, 4.0, 1.6), (10.0, 13.6, 2.6), "frame")                     # yoke
+box((6.0, 4.0, 2.0), (10.0, 6.0, 12.0), "frame")                     # under the cylinder
+box((6.2, 15.0, 2.6), (9.8, 16.2, 15.4), "frame")                    # top strap
+box((5.5, 4.0, 12.0), (10.5, 16.0, 16.4), "frame")                   # recoil shield / rear frame
+box((6.6, 16.2, 12.6), (9.4, 17.6, 15.2), "black")                   # adjustable rear sight
+box((7.6, 17.0, 12.5), (8.4, 17.7, 15.3), "dark")                    # rear sight notch
+box((4.9, 10.8, 12.6), (5.5, 12.8, 15.4), "polished", {"west": "knurl"})   # cylinder release latch (left side)
+box((10.5, 8.0, 13.0), (10.7, 9.0, 14.0), "polished")                # side plate screw
+# target hammer: tall, with a wide serrated spur drooping back over the grip
+box((7.0, 14.5, 15.4), (9.0, 19.2, 17.6), "polished")
+box((7.1, 18.2, 15.0), (8.9, 19.6, 17.4), "polished")
 HAMMER_ROT = ("x", 22.5, (8, 18.6, 17.4))
-box((6.5, 17.6, 17.0), (9.5, 19.4, 21.2), "dark", rot=HAMMER_ROT)   # spur, tipped down at the back
-box((6.3, 18.0, 19.6), (9.7, 19.0, 21.6), "dark", rot=HAMMER_ROT)   # wide thumb pad at the end of the spur
-# trigger guard and trigger
-box((7.0, 1.4, 7.4), (9.0, 2.4, 14.2), "metal")
-box((7.0, 1.4, 7.4), (9.0, 5.6, 8.4), "metal")
-box((7.5, 2.0, 10.4), (8.5, 5.4, 11.4), "dark", rot=("x", -22.5, (8, 5, 11)))
-# grip, raked back, rounded: a core plus a wider-but-shallower and a deeper-but-narrower slab,
-# so the corners read as rounded from every side, with a palm swell and a rounded steel butt cap
+box((6.3, 17.8, 17.0), (9.7, 19.4, 21.0), "polished", {"up": "knurl"}, HAMMER_ROT)
+# rounded trigger guard and a curved, polished trigger
+box((7.0, 1.4, 8.6), (9.0, 2.4, 13.6), "frame")                      # bottom
+box((7.0, 3.4, 7.4), (9.0, 5.8, 8.4), "frame")                       # front
+box((7.0, 2.3, 7.6), (9.0, 3.3, 9.6), "frame", rot=("x", 45, (8, 2.8, 8.6)))     # rounded front corner
+box((7.0, 2.3, 12.6), (9.0, 3.3, 14.6), "frame", rot=("x", -45, (8, 2.8, 13.6)))  # rounded back corner
+box((7.0, 3.2, 13.6), (9.0, 4.6, 14.6), "frame")                     # rises into the grip frame
+box((7.5, 3.8, 10.4), (8.5, 5.8, 11.4), "polished")
+box((7.5, 2.0, 10.6), (8.5, 4.0, 11.6), "polished", rot=("x", 22.5, (8, 4, 11.1)))   # tip curls forward
+# grip: rounded finger-groove target grip, raked back, wrapping the backstrap, on a flared walnut base
 GRIP_ROT = ("x", -22.5, (8, 6, 16))
-box((5.6, -8.0, 13.6), (10.4, 5.0, 18.8), "wood", rot=GRIP_ROT)      # core
+box((5.6, -8.0, 13.6), (10.4, 5.2, 18.8), "wood", rot=GRIP_ROT)      # core
 box((5.2, -7.6, 14.2), (10.8, 4.6, 18.2), "wood", rot=GRIP_ROT)      # sides bulge out
-box((6.1, -7.6, 13.1), (9.9, 4.6, 19.3), "wood", rot=GRIP_ROT)       # front and back bulge out
-box((5.0, -5.0, 14.8), (11.0, 1.5, 17.6), "wood", rot=GRIP_ROT)      # palm swell
-box((5.5, -9.0, 13.9), (10.5, -8.0, 18.5), "metal", rot=GRIP_ROT)    # butt cap
-box((6.0, -9.4, 14.4), (10.0, -9.0, 18.0), "metal", rot=GRIP_ROT)    # butt cap rounding
-box((6.2, 3.0, 16.0), (9.8, 6.5, 19.2), "wood", rot=("x", -45, (8, 5, 16.5)))   # backstrap curve up into the frame
-box((6.5, 4.0, 12.8), (9.5, 6.0, 16.0), "metal")                  # grip frame strap under the hammer
+box((6.1, -7.6, 13.1), (9.9, 4.8, 19.4), "wood", rot=GRIP_ROT)       # front and back bulge out
+box((4.9, -5.2, 15.0), (11.1, 1.8, 18.4), "wood", rot=GRIP_ROT)      # palm swell
+for y in (1.6, -1.6, -4.8):                                          # finger ridges on the front strap
+    box((6.6, y, 12.8), (9.4, y + 1.2, 13.4), "wood", rot=GRIP_ROT)
+box((6.2, 3.0, 16.0), (9.8, 6.6, 19.6), "wood", rot=("x", -45, (8, 5, 16.6)))   # backstrap curve up behind the hammer
+box((5.0, -9.6, 12.8), (11.0, -7.8, 20.0), "wood_dark", rot=GRIP_ROT)  # flared base
+box((5.6, -10.2, 13.4), (10.4, -9.6, 19.4), "wood_dark", rot=GRIP_ROT)
+box((6.5, 4.0, 12.8), (9.5, 6.0, 16.0), "frame")                     # grip frame under the hammer
 
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
@@ -156,7 +190,7 @@ DISPLAY = {
     "thirdperson_lefthand":  centred((0, 0, 0), 0.62, (0, 3, -3)),
 }
 
-model = {"textures": {**{k: f"{NS}:item/hand_cannon/{k}" for k in TEX}, "particle": f"{NS}:item/hand_cannon/metal"},
+model = {"textures": {**{k: f"{NS}:item/hand_cannon/{k}" for k in TEX}, "particle": f"{NS}:item/hand_cannon/frame"},
          "gui_light": "side", "elements": elements, "display": DISPLAY}
 wjson(path("assets", NS, "models", "item", "hand_cannon.json"), model)
 wjson(path("assets", NS, "items", "hand_cannon.json"),
@@ -172,9 +206,9 @@ with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
 print("zip:", zpath, "sha1:", hashlib.sha1(open(zpath, "rb").read()).hexdigest())
 
 # ---------------- preview.png: flat-shaded orthographic renders ----------------
-avg = {k: im.convert("RGB").resize((1, 1), Image.BOX).getpixel((0, 0)) for k, im in TEX.items()}
-FACE_IDX = {"down": (0, 1, 3, 2), "up": (4, 6, 7, 5), "north": (0, 4, 5, 1), "south": (2, 3, 7, 6),
-            "west": (0, 2, 6, 4), "east": (1, 5, 7, 3)}
+# corners in texture order (top-left, top-right, bottom-right, bottom-left) as Minecraft maps face UVs
+FACE_IDX = {"north": (5, 4, 0, 1), "south": (6, 7, 3, 2), "east": (7, 5, 1, 3), "west": (4, 6, 2, 0),
+            "up": (4, 5, 7, 6), "down": (2, 3, 1, 0)}
 def face_quads(e):
     f, t = e["from"], e["to"]
     c = [(x, y, z) for y in (f[1], t[1]) for z in (f[2], t[2]) for x in (f[0], t[0])]
@@ -182,28 +216,37 @@ def face_quads(e):
     if "rotation" in e:
         r = e["rotation"]; c = [rot_axis(p, r["axis"], r["angle"], r["origin"]) for p in c]
     for name, idx in FACE_IDX.items():
-        yield name, [c[i] for i in idx], e["faces"][name]["texture"][1:]
+        yield name, [c[i] for i in idx], e["faces"][name]["texture"][1:], e["faces"][name]["uv"]
 def render(yaw, pitch, size=420, pad=30):
     def view(p):
         p = rot_axis(p, "y", yaw, centre); p = rot_axis(p, "x", pitch, centre); return p
     quads = []
     light = (0.35, 0.8, 0.5); ln = math.sqrt(sum(v * v for v in light)); light = tuple(v / ln for v in light)
+    N = 6
+    def lerp(a, b, t): return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
     for e in elements:
-        for name, pts, tex in face_quads(e):
+        for name, pts, tex, uv in face_quads(e):
             v = [view(p) for p in pts]
             a = [v[1][i] - v[0][i] for i in range(3)]; b = [v[2][i] - v[0][i] for i in range(3)]
             n = (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
-            nl = math.sqrt(sum(x * x for x in n)) or 1; n = tuple(x / nl for x in n)
+            nl = math.sqrt(sum(x * x for x in n)) or 1; n = tuple(-x / nl for x in n)   # outward normal
             if n[2] <= 0: continue   # facing away (camera looks down -z from +z)
-            shade = 0.45 + 0.55 * max(0, sum(n[i] * light[i] for i in range(3)))
-            col = tuple(clamp(c * shade * 1.15) for c in avg[tex])
-            quads.append((sum(p[2] for p in v) / 4, v, col))
+            sh = 0.5 + 0.5 * max(0, sum(n[i] * light[i] for i in range(3)))
+            im = TEX[tex].load()
+            depth = sum(p[2] for p in v) / 4
+            for i in range(N):
+                for j in range(N):
+                    def at(u, w): return lerp(lerp(v[0], v[1], u), lerp(v[3], v[2], u), w)
+                    cell = [at(i / N, j / N), at((i + 1) / N, j / N), at((i + 1) / N, (j + 1) / N), at(i / N, (j + 1) / N)]
+                    tx = int(uv[0] + (uv[2] - uv[0]) * (i + 0.5) / N) % 16; ty = int(uv[1] + (uv[3] - uv[1]) * (j + 0.5) / N) % 16
+                    col = tuple(clamp(c * sh * 1.1) for c in im[tx, ty][:3])
+                    quads.append((depth, cell, col))
     xs = [p[0] for q in quads for p in q[1]]; ys = [p[1] for q in quads for p in q[1]]
     s = (size - 2 * pad) / max(max(xs) - min(xs), max(ys) - min(ys))
     cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
     im = Image.new("RGBA", (size, size), (38, 40, 46, 255)); d = ImageDraw.Draw(im)
     for _, v, col in sorted(quads, key=lambda q: q[0]):
-        d.polygon([(size / 2 + (p[0] - cx) * s, size / 2 - (p[1] - cy) * s) for p in v], fill=col + (255,), outline=(15, 15, 18, 255))
+        d.polygon([(size / 2 + (p[0] - cx) * s, size / 2 - (p[1] - cy) * s) for p in v], fill=col + (255,), outline=col + (255,))
     return im
 views = [render(-90, 0), render(-130, 18), render(180, 8), render(0, 0)]
 pv = Image.new("RGBA", (420 * len(views), 420))
