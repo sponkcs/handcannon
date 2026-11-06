@@ -36,13 +36,12 @@ def tex_metal(base, noise=8, edge=True):
         for x in range(16): px[x, 1] = shade(base, 1.25)
     return im
 def tex_flutes(base, vertical):
-    """Long flutes that stop short of both ends of the cylinder. Rows on the side faces, columns on top/bottom."""
+    """One plain flute per face that stops short of both ends. Rows on the side faces, columns on top/bottom."""
     im = tex_metal(base, 6, edge=False); px = im.load()
-    for lane in (3, 9):
-        for t in range(2, 14):
-            for k, f in ((0, 0.55), (1, 0.45), (2, 0.6), (3, 1.3)):
-                x, y = (lane + k, t) if vertical else (t, lane + k)
-                px[x, y] = shade(base, f)
+    for t in range(3, 13):
+        for k in range(6, 10):
+            x, y = (k, t) if vertical else (t, k)
+            px[x, y] = shade(base, 0.6)
     return im
 def tex_knurl(base):
     im = tex_metal(base, 4, edge=False); px = im.load()
