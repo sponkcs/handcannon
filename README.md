@@ -35,11 +35,12 @@ crits where it lands. Hits do `damage` (x `headshot-multiplier` at head height) 
 pushed back and their view kicks up. The cooldown shows as the sweep on the item. All of it is in `config.yml`.
 
 ## Tommy Gun
-Hold right-click for full auto, about 10 bullets a second: 3 damage each (x1.5 at head height), a little spread
-and a little muzzle climb. Its settings are under `tommy:` in `config.yml` and apply right away.
+Hold right-click for full auto, about 10 bullets a second: 10 damage (five hearts) each, with a little spread. Its settings are under `tommy:` in `config.yml` and apply right away.
 
 ## Nail Bat
-A slow melee weapon that does one heart of damage, a bit under one swing a second. Wait for the attack
-indicator to fill before swinging and the hit is a home run: a crack and the target goes flying with a cloud trail. Damage and speed are stamped on each bat when it is
-given (`bat.damage`, `bat.attack-speed`); the home-run settings apply right away. The bat is a stick underneath,
-so it is kept out of crafting grids and furnaces.
+Left-click is a normal hit: 10 damage (five hearts) at full strength, a bit under one swing a second.
+Hold right-click to wind up (the bat goes up over your shoulder); after a second there's a ding, and letting go
+swings a home run: 10 damage and whatever is in front of you goes flying with a cloud trail. Let go early and
+nothing happens. Left-click damage and speed are stamped on each bat when it is given (`bat.damage`,
+`bat.attack-speed`); the rest of `bat:` applies right away. The bat is a stick underneath, so it is kept out of
+crafting grids and furnaces.

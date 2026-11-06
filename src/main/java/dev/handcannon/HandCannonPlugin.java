@@ -57,6 +57,8 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        getConfig().options().copyDefaults(true);   // add settings from newer versions to an existing config.yml
+        saveConfig();
         gunKey = new NamespacedKey(this, "hand_cannon");
         tommyKey = new NamespacedKey(this, "tommy_gun");
         bat = new NailBat(this);
@@ -147,13 +149,14 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
     record Stats(boolean big, double damage, double headshot, double range, double spread,
                  double knockback, double recoil, float kick) {
         static Stats cannon(FileConfiguration c) {
-            return new Stats(true, c.getDouble("damage", 16), c.getDouble("headshot-multiplier", 1.5), c.getDouble("range", 64), 0,
+            return new Stats(true, c.getDouble("damage", 10), c.getDouble("headshot-multiplier", 1.0), c.getDouble("range", 64), 0,
                     c.getDouble("knockback", 1.2), c.getDouble("recoil", 0.45), (float) c.getDouble("pitch-kick", 6));
         }
         static Stats tommy(FileConfiguration c) {
-            return new Stats(false, c.getDouble("tommy.damage", 3), c.getDouble("tommy.headshot-multiplier", 1.5),
+            // no view kick: turning the player's camera on every bullet fights their mouse and makes aiming stutter
+            return new Stats(false, c.getDouble("tommy.damage", 10), c.getDouble("tommy.headshot-multiplier", 1.0),
                     c.getDouble("tommy.range", 48), c.getDouble("tommy.spread", 2.5), c.getDouble("tommy.knockback", 0.15),
-                    0, (float) c.getDouble("tommy.pitch-kick", 0.8));
+                    0, 0f);
         }
     }
 
