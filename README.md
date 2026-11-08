@@ -1,8 +1,8 @@
 # HandCannon (Paper 26.2, Java 25)
 
 A comically oversized snubnose revolver (right-click to fire), a cartoon M1-style Tommy gun with a huge drum magazine
-(hold right-click for full auto) and a nail-studded baseball bat (a fully charged swing is a home run), all with
-3D models. No ammo, no reloading.
+(hold right-click for full auto), a chunky side-by-side double-barrel shotgun (right-click for a blast of pellets)
+and a nail-studded baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
 
 ![preview](preview.png)
 
@@ -24,7 +24,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|tommy|bat] [player]   give a Hand Cannon (default), Tommy Gun or Nail Bat (op)
+    /hc give [gun|tommy|shotgun|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -36,6 +36,11 @@ pushed back and their view kicks up. The cooldown shows as the sweep on the item
 
 ## Tommy Gun
 Hold right-click for full auto, about 10 bullets a second: 10 damage (five hearts) each, with a little spread. Its settings are under `tommy:` in `config.yml` and apply right away.
+
+## Double Barrel
+Right-click fires a blast of 8 pellets with a one-second wait between shots. Anything caught in the blast takes
+10 damage (five hearts) however many pellets hit it, and gets shoved harder the more pellets land. Settings are
+under `shotgun:` in `config.yml`.
 
 ## Nail Bat
 Left-click is a normal hit: 10 damage (five hearts) at full strength, a bit under one swing a second.

@@ -321,10 +321,10 @@ round_prism(8, 1.8, 11.0, 2.18, 8.62, "drum_plate")                  # face plat
 round_prism(8, 1.8, 8.2, 1.96, 8.84, "drum_side")                    # pressed centre
 round_prism(8, 1.8, 3.2, 1.72, 9.08, "polished")                     # centre hub
 box((6.7, 1.4, 1.3), (9.3, 2.2, 1.7), "polished")                    # winding key on the front
-box((6.6, 7.4, 1.6), (9.4, 8.6, 9.2), "steel")                       # magazine well
+box((6.6, 7.4, 1.6), (9.4, 8.5, 9.2), "steel")                       # magazine well
 # trigger guard and trigger
 box((7.0, 4.8, 10.2), (9.0, 5.6, 13.8), "steel")
-box((7.0, 5.2, 9.6), (9.0, 7.4, 10.4), "steel")
+box((7.05, 5.2, 9.6), (8.95, 7.4, 10.4), "steel")
 box((7.0, 4.6, 9.8), (9.0, 5.6, 11.0), "steel", rot=("x", 45, (8, 5.2, 10.4)))   # rounded front corner
 box((7.5, 5.6, 11.2), (8.5, 7.4, 12.0), "polished", rot=("x", 22.5, (8, 7, 11.6)))  # trigger
 # pistol grip raked back, finger grooves on the front, flared at the bottom
@@ -345,6 +345,87 @@ box((6.2, 6.0, 26.2), (9.8, 8.4, 29.6), "walnut", rot=ST)
 box((6.4, 5.4, 30.0), (9.6, 12.2, 30.6), "steel", rot=ST)            # butt plate
 box((7.6, 4.6, 27.8), (8.4, 5.6, 28.6), "polished", rot=ST)          # sling swivel
 TOMMY = elements
+
+# ---------------- geometry: double-barrel shotgun ----------------
+# A side-by-side double modelled on a fine English sidelock (blued barrels with gold bands, case-hardened action,
+# figured walnut, cheekpiece, black recoil pad), with cartoon proportions: short fat barrels, chunky everything.
+rng_sg = random.Random(23)
+def tex_case():
+    """Colour case-hardening: mottled greys and blues with a few amber patches."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    blobs = [(rng_sg.uniform(0, 16), rng_sg.uniform(0, 16), rng_sg.choice([(150, 154, 162), (92, 102, 128), (168, 132, 84), (120, 124, 134)]))
+             for _ in range(9)]
+    for y in range(16):
+        for x in range(16):
+            bx, by, c = min(blobs, key=lambda b: (b[0] - x) ** 2 + (b[1] - y) ** 2)
+            n = rng_sg.randint(-10, 10)
+            px[x, y] = tuple(clamp(v + n) for v in c) + (255,)
+    return im
+def tex_figured(base):
+    """Dark walnut with swirly figure."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            g = math.sin(x * 0.9 + math.sin(y * 0.6) * 2.4) * 16 + math.sin(y * 1.3 + x * 0.2) * 6 + rng_sg.randint(-4, 4)
+            px[x, y] = (clamp(base[0] + g), clamp(base[1] + g * 0.55), clamp(base[2] + g * 0.3), 255)
+    return im
+def tex_checkered(base):
+    im = tex_figured(base); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            if (x + y) % 3 == 0 or (x - y) % 3 == 0: px[x, y] = shade(px[x, y], 0.68)
+    return im
+SG_TEX = {"blued": tex_metal((30, 34, 48), 5), "case": tex_case(), "gold": tex_metal((214, 168, 72), 10),
+          "orange": flat((255, 110, 30), 6), "bore": tex_bore(), "dark": flat((22, 22, 26)),
+          "polished": tex_metal((176, 180, 188), 5), "walnut": tex_figured((112, 58, 30)),
+          "checkered": tex_checkered((112, 58, 30)), "rubber": flat((26, 26, 28), 3)}
+for k, im in SG_TEX.items(): im.save(path("assets", NS, "textures", "item", "shotgun", k + ".png"))
+
+elements = []
+# two fat barrels side by side, a flat rib on top with an orange bead and a little rear sight
+for bx, d in ((6.3, 0.0), (9.7, 0.02)):   # d: the right barrel's parts sit a hair apart so overlaps never z-fight
+    round_prism(bx, 11.0, 3.4, -14.0, 4.6, "blued")
+    round_prism(bx, 11.0 + d, 3.8, 3.0 + d, 3.6 + d, "gold")            # gold band near the breech
+    box((bx - 1.25, 9.75, -14.32), (bx + 1.25, 12.25, -14.22), "bore")  # muzzle
+box((7.3, 12.2, -14.0), (8.7, 13.1, 4.6), "blued")                     # top rib
+box((7.3, 9.0, -13.0), (8.7, 10.0, 4.5), "blued")                      # bottom rib
+box((7.6, 13.1, -13.7), (8.4, 13.9, -12.9), "orange")                  # bead
+box((7.4, 13.1, -1.2), (8.6, 14.1, -0.6), "dark")                      # folding rear sight
+# case-hardened action: a chunky box, rounded fences behind the barrels, side plates running back
+box((4.8, 7.6, 4.6), (11.2, 12.6, 10.4), "case")
+round_prism(6.3, 11.0, 4.0, 4.4, 5.4, "case")                          # fences
+round_prism(9.7, 11.02, 4.0, 4.42, 5.42, "case")
+box((4.6, 7.2, 9.8), (11.4, 11.4, 14.6), "case")                       # side plates
+box((4.5, 9.2, 11.0), (4.6, 9.8, 11.6), "gold")                        # lock pins
+box((11.4, 9.2, 11.0), (11.5, 9.8, 11.6), "gold")
+# top lever and safety on the tang
+box((7.3, 12.6, 10.0), (8.7, 13.4, 13.6), "case")
+box((6.8, 12.8, 12.6), (9.2, 13.8, 14.2), "case")                      # thumbpiece
+box((7.5, 11.4, 14.8), (8.5, 12.0, 15.8), "gold")                      # safety slide
+# splinter forend under the barrels, checkered on the sides
+box((5.4, 7.4, -6.0), (10.6, 9.8, 4.6), "walnut", {"east": "checkered", "west": "checkered"})
+box((5.8, 7.8, -7.2), (10.2, 9.6, -6.0), "walnut")                     # rounded tip
+# rounded trigger guard and two triggers
+box((7.0, 4.2, 8.2), (9.0, 5.0, 12.6), "blued")
+box((7.05, 4.8, 7.6), (8.95, 7.6, 8.4), "blued")
+box((7.0, 4.4, 7.8), (9.0, 5.4, 9.0), "blued", rot=("x", 45, (8, 5.0, 8.4)))
+box((7.0, 4.4, 12.0), (9.0, 5.4, 13.2), "blued", rot=("x", -45, (8, 5.0, 12.6)))
+box((7.5, 5.2, 9.2), (8.5, 7.6, 10.0), "gold", rot=("x", 22.5, (8, 7.2, 9.6)))      # front trigger
+box((7.5, 5.2, 10.8), (8.5, 7.6, 11.6), "gold", rot=("x", 22.5, (8, 7.2, 11.2)))    # back trigger
+# stock: a checkered wrist dropping to a pistol grip, then a figured butt with a cheekpiece and a recoil pad
+WR = ("x", 22.5, (8, 11.0, 14.0))
+box((6.0, 6.6, 14.0), (10.0, 11.2, 20.0), "checkered", rot=WR)         # wrist
+PG = ("x", -22.5, (8, 7.0, 18.0))
+box((6.3, 1.6, 16.2), (9.7, 7.4, 19.8), "checkered", rot=PG)           # pistol grip
+box((6.1, 1.0, 16.0), (9.9, 1.6, 20.0), "dark", rot=PG)                # grip cap
+box((5.8, 4.6, 19.2), (10.2, 9.8, 29.6), "walnut")                     # butt
+box((6.1, 9.8, 20.4), (9.9, 10.5, 29.6), "walnut")                     # rounded comb
+BELLY = ("x", 22.5, (8, 5.0, 19.4))
+box((6.0, 1.2, 19.4), (10.0, 9.0, 30.4), "walnut", rot=BELLY)          # underside sloping down to the toe
+box((5.3, 5.4, 21.4), (5.8, 9.2, 28.2), "walnut")                      # cheekpiece (left side)
+box((5.6, -2.8, 29.6), (10.4, 10.7, 31.0), "rubber")                   # recoil pad
+box((7.6, 0.4, 25.4), (8.4, 1.2, 26.2), "polished", rot=BELLY)         # sling swivel
+SHOTGUN = elements
 
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
@@ -397,6 +478,16 @@ TOMMY_DISPLAY = {
     "thirdperson_righthand": centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
     "thirdperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
 }
+SHOTGUN_DISPLAY = {
+    "gui":                   centred(SHOTGUN, (0, 90, 0), 0.33),
+    "ground":                centred(SHOTGUN, (0, 90, 0), 0.26),
+    "fixed":                 centred(SHOTGUN, (0, 90, 0), 0.36),
+    "head":                  centred(SHOTGUN, (0, 0, 0), 0.4, (0, 8, 0)),
+    "firstperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
+    "firstperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
+    "thirdperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
+    "thirdperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -418,6 +509,7 @@ def write_item(name, els, tex, display, particle):
 write_item("hand_cannon", GUN, TEX, GUN_DISPLAY, "frame")
 write_item("nail_bat", BAT, BAT_TEX, BAT_DISPLAY, "wood")
 write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
+write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -472,6 +564,7 @@ def render(els, tex, yaw, pitch, roll=0, size=420, pad=30):
     return im
 rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 180, 8), render(GUN, TEX, 0, 0)],
         [render(TOMMY, TOMMY_TEX, -90, 0), render(TOMMY, TOMMY_TEX, -130, 18), render(TOMMY, TOMMY_TEX, 180, 8), render(TOMMY, TOMMY_TEX, -60, -15)],
+        [render(SHOTGUN, SG_TEX, -90, 0), render(SHOTGUN, SG_TEX, -130, 18), render(SHOTGUN, SG_TEX, 180, 8), render(SHOTGUN, SG_TEX, -60, -15)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):

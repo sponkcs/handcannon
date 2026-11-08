@@ -12,6 +12,16 @@ tommy:                      # the Tommy Gun: hold right-click for full auto
   spread: 2.5               # degrees of wobble per bullet
   shots-per-click: 2        # holding right-click repeats every 4 ticks; this many bullets per repeat (2 = 10 a second)
   knockback: 0.15
+shotgun:                    # the Double Barrel: right-click fires a blast of pellets
+  damage: 10.0              # to each target caught in the blast, however many pellets hit it (10 = five hearts)
+  headshot-multiplier: 1.0  # 1.0 = no bonus
+  pellets: 8
+  spread: 6.0               # degrees of wobble per pellet
+  range: 24
+  cooldown-ticks: 20        # time between shots (20 ticks = 1 s)
+  knockback: 1.0            # full shove when every pellet hits
+  recoil: 0.3
+  pitch-kick: 4.0           # degrees the view kicks upward per shot (0 = off)
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)
