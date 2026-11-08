@@ -343,7 +343,8 @@ TOMMY = elements
 
 # ---------------- geometry: double-barrel shotgun ----------------
 # A side-by-side double modelled on a fine English sidelock (blued barrels, case-hardened action, figured walnut,
-# cheekpiece, black recoil pad), with cartoon proportions: short fat barrels, chunky everything, no gold trim.
+# cheekpiece, black recoil pad), with cartoon proportions: fat barrels, chunky everything, no gold trim, and the
+# stock sawn off behind the pistol grip.
 rng_sg = random.Random(23)
 def tex_case():
     """Colour case-hardening, cartoon style: a few big soft patches of grey, blue and amber."""
@@ -401,19 +402,12 @@ box((7.0, 4.4, 7.8), (9.0, 5.4, 9.0), "blued", rot=("x", 45, (8, 5.0, 8.4)))
 box((7.0, 4.4, 12.0), (9.0, 5.4, 13.2), "blued", rot=("x", -45, (8, 5.0, 12.6)))
 box((7.5, 5.2, 9.2), (8.5, 7.6, 10.0), "polished", rot=("x", 22.5, (8, 7.2, 9.6)))  # front trigger
 box((7.5, 5.2, 10.8), (8.5, 7.6, 11.6), "polished", rot=("x", 22.5, (8, 7.2, 11.2)))  # back trigger
-# stock: one continuous shape. A slim checkered wrist off the action, a pistol grip hanging down behind the
-# triggers, a level comb, and an underside that slopes smoothly down to the toe of a black recoil pad.
-box((6.2, 7.0, 14.0), (9.8, 11.3, 21.0), "checkered")                  # wrist
+# sawed off: the stock is cut away just behind the pistol grip, leaving a short checkered wrist
+box((6.2, 7.0, 14.0), (9.8, 11.3, 18.2), "checkered")                  # wrist
+box((6.4, 7.4, 18.2), (9.6, 10.9, 18.6), "walnut")                     # sawn end
 PG = ("x", -22.5, (8, 7.2, 17.0))
 box((6.4, 1.6, 15.4), (9.6, 7.4, 18.8), "checkered", rot=PG)           # pistol grip
 box((6.2, 1.0, 15.2), (9.8, 1.6, 19.0), "dark", rot=PG)                # grip cap
-box((5.8, 6.0, 20.0), (10.2, 10.8, 29.6), "walnut")                    # butt
-box((6.1, 10.8, 21.0), (9.9, 11.2, 29.6), "walnut")                    # rounded comb
-BELLY = ("x", 22.5, (8, 6.0, 20.0))
-box((6.0, 4.0, 20.0), (10.0, 8.0, 31.4), "walnut", rot=BELLY)          # underside sloping down to the toe
-box((5.3, 6.6, 22.0), (5.8, 9.8, 28.0), "walnut")                      # cheekpiece (left side)
-box((5.6, -0.6, 29.6), (10.4, 11.3, 31.6), "rubber")                   # recoil pad
-box((7.6, 3.2, 26.0), (8.4, 4.0, 26.8), "polished", rot=BELLY)         # sling swivel
 SHOTGUN = elements
 
 # ---------------- maths for preview + auto-centring ----------------
@@ -468,9 +462,9 @@ TOMMY_DISPLAY = {
     "thirdperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
 }
 SHOTGUN_DISPLAY = {
-    "gui":                   centred(SHOTGUN, (0, 90, 0), 0.33),
-    "ground":                centred(SHOTGUN, (0, 90, 0), 0.26),
-    "fixed":                 centred(SHOTGUN, (0, 90, 0), 0.36),
+    "gui":                   centred(SHOTGUN, (0, 90, 0), 0.43),
+    "ground":                centred(SHOTGUN, (0, 90, 0), 0.32),
+    "fixed":                 centred(SHOTGUN, (0, 90, 0), 0.46),
     "head":                  centred(SHOTGUN, (0, 0, 0), 0.4, (0, 8, 0)),
     "firstperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
     "firstperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
