@@ -27,13 +27,14 @@ rng = random.Random(7)
 def clamp(v): return max(0, min(255, int(v)))
 def shade(c, f): return tuple(clamp(v * f) for v in c[:3]) + (255,)
 def tex_metal(base, noise=8, edge=True):
+    """Clean cartoon metal: flat colour, a soft light band at the top and shade at the bottom, a bright edge line.
+    (noise is kept for the callers but no longer speckles the surface.)"""
     im = Image.new("RGBA", (16, 16)); px = im.load()
     for y in range(16):
-        for x in range(16):
-            n = rng.randint(-noise, noise) + (5 if y < 4 else 0) - (5 if y > 12 else 0)
-            px[x, y] = tuple(clamp(c + n) for c in base) + (255,)
+        f = 1.0 + (0.12 if y < 4 else 0) - (0.1 if y > 12 else 0)
+        for x in range(16): px[x, y] = shade(base, f)
     if edge:
-        for x in range(16): px[x, 1] = shade(base, 1.25)
+        for x in range(16): px[x, 1] = shade(base, 1.3)
     return im
 def tex_flutes(base, vertical):
     """One plain flute per face that stops short of both ends. Rows on the side faces, columns on top/bottom."""
@@ -44,21 +45,19 @@ def tex_flutes(base, vertical):
             px[x, y] = shade(base, 0.6)
     return im
 def tex_knurl(base):
-    im = tex_metal(base, 4, edge=False); px = im.load()
+    im = tex_metal(base, 0, edge=False); px = im.load()
     for y in range(16):
         for x in range(16):
-            if (x + y) % 2 == 0: px[x, y] = shade(base, 0.6)
+            if (x + y) % 2 == 0: px[x, y] = shade(base, 0.8)
     return im
 def tex_wood(base, streak):
-    """Smooth polished hardwood, grain running along the grip."""
+    """Smooth polished wood: soft broad grain running along the piece and a highlight stripe."""
     im = Image.new("RGBA", (16, 16)); px = im.load()
-    lines = [rng.uniform(0, 16) for _ in range(5)]
     for y in range(16):
         for x in range(16):
-            g = math.sin(x * 1.7 + math.sin(y * 0.4) * 1.5) * 9 + rng.randint(-4, 4)
+            g = math.sin(x * 0.8 + math.sin(y * 0.3) * 1.2) * 6
             c = [base[0] + g, base[1] + g * 0.6, base[2] + g * 0.35]
-            if any(abs(x - (l + math.sin(y * 0.5 + l) * 0.8)) < 0.55 for l in lines): c = [v * streak for v in c]
-            if x in (4, 5): c = [v * 1.18 for v in c]          # polish highlight
+            if x in (4, 5): c = [v * 1.12 for v in c]          # polish highlight
             px[x, y] = tuple(clamp(v) for v in c) + (255,)
     return im
 def tex_bore():
@@ -163,18 +162,14 @@ def tex_bat_wood():
     im = Image.new("RGBA", (16, 16)); px = im.load()
     for y in range(16):
         for x in range(16):
-            g = math.sin(x * 1.1 + math.sin(y * 0.3) * 2) * 8 + rng_bat.randint(-5, 5)
+            g = math.sin(x * 0.7 + math.sin(y * 0.25) * 1.5) * 6 + (10 if x in (4, 5) else 0)
             px[x, y] = (clamp(206 + g), clamp(150 + g * 0.8), clamp(70 + g * 0.4), 255)
-    for _ in range(2):   # a couple of faint scuffs
-        x, y = rng_bat.randrange(16), rng_bat.randrange(16)
-        px[x, y] = (178, 128, 62, 255)
     return im
 def tex_rust():
     im = Image.new("RGBA", (16, 16)); px = im.load()
     for y in range(16):
         for x in range(16):
-            n = rng_bat.randint(-14, 14)
-            px[x, y] = (clamp(108 + n), clamp(64 + n * 0.6), clamp(44 + n * 0.4), 255)
+            px[x, y] = shade((112, 68, 48), 1.12 if y < 6 else 1.0)
     return im
 def tex_nail_head():
     im = tex_rust(); d = ImageDraw.Draw(im)
@@ -351,29 +346,27 @@ TOMMY = elements
 # figured walnut, cheekpiece, black recoil pad), with cartoon proportions: short fat barrels, chunky everything.
 rng_sg = random.Random(23)
 def tex_case():
-    """Colour case-hardening: mottled greys and blues with a few amber patches."""
+    """Colour case-hardening, cartoon style: a few big soft patches of grey, blue and amber."""
+    from PIL import ImageFilter
     im = Image.new("RGBA", (16, 16)); px = im.load()
-    blobs = [(rng_sg.uniform(0, 16), rng_sg.uniform(0, 16), rng_sg.choice([(150, 154, 162), (92, 102, 128), (168, 132, 84), (120, 124, 134)]))
-             for _ in range(9)]
+    blobs = [(2, 3, (150, 154, 162)), (11, 2, (108, 118, 142)), (6, 9, (164, 134, 92)), (13, 12, (132, 136, 146)), (2, 14, (112, 120, 140))]
     for y in range(16):
         for x in range(16):
-            bx, by, c = min(blobs, key=lambda b: (b[0] - x) ** 2 + (b[1] - y) ** 2)
-            n = rng_sg.randint(-10, 10)
-            px[x, y] = tuple(clamp(v + n) for v in c) + (255,)
-    return im
+            px[x, y] = min(blobs, key=lambda b: (b[0] - x) ** 2 + (b[1] - y) ** 2)[2] + (255,)
+    return im.filter(ImageFilter.GaussianBlur(1.6))
 def tex_figured(base):
-    """Dark walnut with swirly figure."""
+    """Dark walnut with soft, swirly figure."""
     im = Image.new("RGBA", (16, 16)); px = im.load()
     for y in range(16):
         for x in range(16):
-            g = math.sin(x * 0.9 + math.sin(y * 0.6) * 2.4) * 16 + math.sin(y * 1.3 + x * 0.2) * 6 + rng_sg.randint(-4, 4)
+            g = math.sin(x * 0.7 + math.sin(y * 0.4) * 2.0) * 9 + (8 if x in (4, 5) else 0)
             px[x, y] = (clamp(base[0] + g), clamp(base[1] + g * 0.55), clamp(base[2] + g * 0.3), 255)
     return im
 def tex_checkered(base):
     im = tex_figured(base); px = im.load()
     for y in range(16):
         for x in range(16):
-            if (x + y) % 3 == 0 or (x - y) % 3 == 0: px[x, y] = shade(px[x, y], 0.68)
+            if (x + y) % 3 == 0 or (x - y) % 3 == 0: px[x, y] = shade(px[x, y], 0.84)
     return im
 SG_TEX = {"blued": tex_metal((30, 34, 48), 5), "case": tex_case(), "gold": tex_metal((214, 168, 72), 10),
           "orange": flat((255, 110, 30), 6), "bore": tex_bore(), "dark": flat((22, 22, 26)),
