@@ -342,8 +342,8 @@ box((7.6, 4.6, 27.8), (8.4, 5.6, 28.6), "polished", rot=ST)          # sling swi
 TOMMY = elements
 
 # ---------------- geometry: double-barrel shotgun ----------------
-# A side-by-side double modelled on a fine English sidelock (blued barrels with gold bands, case-hardened action,
-# figured walnut, cheekpiece, black recoil pad), with cartoon proportions: short fat barrels, chunky everything.
+# A side-by-side double modelled on a fine English sidelock (blued barrels, case-hardened action, figured walnut,
+# cheekpiece, black recoil pad), with cartoon proportions: short fat barrels, chunky everything, no gold trim.
 rng_sg = random.Random(23)
 def tex_case():
     """Colour case-hardening, cartoon style: a few big soft patches of grey, blue and amber."""
@@ -368,7 +368,7 @@ def tex_checkered(base):
         for x in range(16):
             if (x + y) % 3 == 0 or (x - y) % 3 == 0: px[x, y] = shade(px[x, y], 0.84)
     return im
-SG_TEX = {"blued": tex_metal((30, 34, 48), 5), "case": tex_case(), "gold": tex_metal((214, 168, 72), 10),
+SG_TEX = {"blued": tex_metal((30, 34, 48), 5), "case": tex_case(),
           "orange": flat((255, 110, 30), 6), "bore": tex_bore(), "dark": flat((22, 22, 26)),
           "polished": tex_metal((176, 180, 188), 5), "walnut": tex_figured((112, 58, 30)),
           "checkered": tex_checkered((112, 58, 30)), "rubber": flat((26, 26, 28), 3)}
@@ -376,9 +376,8 @@ for k, im in SG_TEX.items(): im.save(path("assets", NS, "textures", "item", "sho
 
 elements = []
 # two fat barrels side by side, a flat rib on top with an orange bead and a little rear sight
-for bx, d in ((6.3, 0.0), (9.7, 0.02)):   # d: the right barrel's parts sit a hair apart so overlaps never z-fight
+for bx in (6.3, 9.7):
     round_prism(bx, 11.0, 3.4, -14.0, 4.6, "blued")
-    round_prism(bx, 11.0 + d, 3.8, 3.0 + d, 3.6 + d, "gold")            # gold band near the breech
     box((bx - 1.25, 9.75, -14.32), (bx + 1.25, 12.25, -14.22), "bore")  # muzzle
 box((7.3, 12.2, -14.0), (8.7, 13.1, 4.6), "blued")                     # top rib
 box((7.3, 9.0, -13.0), (8.7, 10.0, 4.5), "blued")                      # bottom rib
@@ -389,12 +388,9 @@ box((4.8, 7.6, 4.6), (11.2, 12.6, 10.4), "case")
 round_prism(6.3, 11.0, 4.0, 4.4, 5.4, "case")                          # fences
 round_prism(9.7, 11.02, 4.0, 4.42, 5.42, "case")
 box((4.6, 7.2, 9.8), (11.4, 11.4, 14.6), "case")                       # side plates
-box((4.5, 9.2, 11.0), (4.6, 9.8, 11.6), "gold")                        # lock pins
-box((11.4, 9.2, 11.0), (11.5, 9.8, 11.6), "gold")
-# top lever and safety on the tang
+# top lever on the tang
 box((7.3, 12.6, 10.0), (8.7, 13.4, 13.6), "case")
 box((6.8, 12.8, 12.6), (9.2, 13.8, 14.2), "case")                      # thumbpiece
-box((7.5, 11.4, 14.8), (8.5, 12.0, 15.8), "gold")                      # safety slide
 # splinter forend under the barrels, checkered on the sides
 box((5.4, 7.4, -6.0), (10.6, 9.8, 4.6), "walnut", {"east": "checkered", "west": "checkered"})
 box((5.8, 7.8, -7.2), (10.2, 9.6, -6.0), "walnut")                     # rounded tip
@@ -403,21 +399,21 @@ box((7.0, 4.2, 8.2), (9.0, 5.0, 12.6), "blued")
 box((7.05, 4.8, 7.6), (8.95, 7.6, 8.4), "blued")
 box((7.0, 4.4, 7.8), (9.0, 5.4, 9.0), "blued", rot=("x", 45, (8, 5.0, 8.4)))
 box((7.0, 4.4, 12.0), (9.0, 5.4, 13.2), "blued", rot=("x", -45, (8, 5.0, 12.6)))
-box((7.5, 5.2, 9.2), (8.5, 7.6, 10.0), "gold", rot=("x", 22.5, (8, 7.2, 9.6)))      # front trigger
-box((7.5, 5.2, 10.8), (8.5, 7.6, 11.6), "gold", rot=("x", 22.5, (8, 7.2, 11.2)))    # back trigger
-# stock: a checkered wrist dropping to a pistol grip, then a figured butt with a cheekpiece and a recoil pad
-WR = ("x", 22.5, (8, 11.0, 14.0))
-box((6.0, 6.6, 14.0), (10.0, 11.2, 20.0), "checkered", rot=WR)         # wrist
-PG = ("x", -22.5, (8, 7.0, 18.0))
-box((6.3, 1.6, 16.2), (9.7, 7.4, 19.8), "checkered", rot=PG)           # pistol grip
-box((6.1, 1.0, 16.0), (9.9, 1.6, 20.0), "dark", rot=PG)                # grip cap
-box((5.8, 4.6, 19.2), (10.2, 9.8, 29.6), "walnut")                     # butt
-box((6.1, 9.8, 20.4), (9.9, 10.5, 29.6), "walnut")                     # rounded comb
-BELLY = ("x", 22.5, (8, 5.0, 19.4))
-box((6.0, 1.2, 19.4), (10.0, 9.0, 30.4), "walnut", rot=BELLY)          # underside sloping down to the toe
-box((5.3, 5.4, 21.4), (5.8, 9.2, 28.2), "walnut")                      # cheekpiece (left side)
-box((5.6, -2.8, 29.6), (10.4, 10.7, 31.0), "rubber")                   # recoil pad
-box((7.6, 0.4, 25.4), (8.4, 1.2, 26.2), "polished", rot=BELLY)         # sling swivel
+box((7.5, 5.2, 9.2), (8.5, 7.6, 10.0), "polished", rot=("x", 22.5, (8, 7.2, 9.6)))  # front trigger
+box((7.5, 5.2, 10.8), (8.5, 7.6, 11.6), "polished", rot=("x", 22.5, (8, 7.2, 11.2)))  # back trigger
+# stock: one continuous shape. A slim checkered wrist off the action, a pistol grip hanging down behind the
+# triggers, a level comb, and an underside that slopes smoothly down to the toe of a black recoil pad.
+box((6.2, 7.0, 14.0), (9.8, 11.3, 21.0), "checkered")                  # wrist
+PG = ("x", -22.5, (8, 7.2, 17.0))
+box((6.4, 1.6, 15.4), (9.6, 7.4, 18.8), "checkered", rot=PG)           # pistol grip
+box((6.2, 1.0, 15.2), (9.8, 1.6, 19.0), "dark", rot=PG)                # grip cap
+box((5.8, 6.0, 20.0), (10.2, 10.8, 29.6), "walnut")                    # butt
+box((6.1, 10.8, 21.0), (9.9, 11.2, 29.6), "walnut")                    # rounded comb
+BELLY = ("x", 22.5, (8, 6.0, 20.0))
+box((6.0, 4.0, 20.0), (10.0, 8.0, 31.4), "walnut", rot=BELLY)          # underside sloping down to the toe
+box((5.3, 6.6, 22.0), (5.8, 9.8, 28.0), "walnut")                      # cheekpiece (left side)
+box((5.6, -0.6, 29.6), (10.4, 11.3, 31.6), "rubber")                   # recoil pad
+box((7.6, 3.2, 26.0), (8.4, 4.0, 26.8), "polished", rot=BELLY)         # sling swivel
 SHOTGUN = elements
 
 # ---------------- maths for preview + auto-centring ----------------
