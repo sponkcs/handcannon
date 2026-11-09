@@ -434,7 +434,7 @@ def tex_grip():
 PALA_TEX = {"body": tex_metal((122, 24, 30)), "body_dark": tex_metal((86, 16, 22), 0, edge=False),
             "glow": tex_glow(), "coil": tex_banded((64, 66, 72), 2, 0.7), "copper": tex_banded((178, 98, 52), 3, 0.8),
             "hose": tex_banded((36, 36, 38), 2, 0.75), "metal": tex_metal((156, 160, 168)), "grip": tex_grip(),
-            "dark": flat((22, 22, 26))}
+            "dark": flat((22, 22, 26)), "gold": tex_metal((226, 180, 64))}
 for k, im in PALA_TEX.items(): im.save(path("assets", NS, "textures", "item", "pala_pistol", k + ".png"))
 
 elements = []
@@ -446,6 +446,13 @@ box((5.35, 9.4, 7.6), (5.62, 11.8, 10.0), "glow")                     # indicato
 box((10.38, 9.4, 7.6), (10.65, 11.8, 10.0), "glow")                   # indicator light (right)
 box((5.45, 9.0, 7.2), (5.6, 12.2, 10.4), "dark")                     # light bezels
 box((10.4, 9.0, 7.2), (10.55, 12.2, 10.4), "dark")
+# maker's mark: a small raised gold ankh on the left of the housing, in front of the indicator light
+AX0, AX1 = 5.45, 5.62
+box((AX0, 8.7, 4.95), (AX1, 11.0, 5.45), "gold")                     # stem
+box((AX0, 11.0, 4.25), (AX1, 11.5, 6.15), "gold")                    # crossbar
+box((AX0, 11.5, 4.6), (AX1 - 0.01, 12.7, 5.0), "gold")               # loop: front side
+box((AX0, 11.5, 5.4), (AX1 - 0.01, 12.7, 5.8), "gold")               # loop: back side
+box((AX0, 12.7, 4.85), (AX1 - 0.02, 13.1, 5.55), "gold")             # loop: top
 # the glowing core inside an open cage
 round_prism(8, 10.8, 2.8, -8.0, 3.2, "glow")
 for x0, y0 in ((5.9, 12.7), (9.5, 12.7), (5.9, 8.3), (9.5, 8.3)):    # cage bars
