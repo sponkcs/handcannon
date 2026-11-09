@@ -395,13 +395,12 @@ box((6.8, 12.8, 12.6), (9.2, 13.8, 14.2), "case")                      # thumbpi
 # splinter forend under the barrels, checkered on the sides
 box((5.4, 7.4, -6.0), (10.6, 9.8, 4.6), "walnut", {"east": "checkered", "west": "checkered"})
 box((5.8, 7.8, -7.2), (10.2, 9.6, -6.0), "walnut")                     # rounded tip
-# rounded trigger guard and two triggers
+# rounded trigger guard and a single trigger
 box((7.0, 4.2, 8.2), (9.0, 5.0, 12.6), "blued")
 box((7.05, 4.8, 7.6), (8.95, 7.6, 8.4), "blued")
 box((7.0, 4.4, 7.8), (9.0, 5.4, 9.0), "blued", rot=("x", 45, (8, 5.0, 8.4)))
 box((7.0, 4.4, 12.0), (9.0, 5.4, 13.2), "blued", rot=("x", -45, (8, 5.0, 12.6)))
-box((7.5, 5.2, 9.2), (8.5, 7.6, 10.0), "polished", rot=("x", 22.5, (8, 7.2, 9.6)))  # front trigger
-box((7.5, 5.2, 10.8), (8.5, 7.6, 11.6), "polished", rot=("x", 22.5, (8, 7.2, 11.2)))  # back trigger
+box((7.5, 5.2, 10.0), (8.5, 7.6, 10.8), "polished", rot=("x", 22.5, (8, 7.2, 10.4)))  # single trigger
 # sawed off: the stock is cut away just behind the pistol grip, leaving a short checkered wrist
 box((6.2, 7.0, 14.0), (9.8, 11.3, 18.2), "checkered")                  # wrist
 box((6.4, 7.4, 18.2), (9.6, 10.9, 18.6), "walnut")                     # sawn end
