@@ -409,6 +409,76 @@ box((6.4, 1.6, 15.4), (9.6, 7.4, 18.8), "checkered", rot=PG)           # pistol 
 box((6.2, 1.0, 15.2), (9.8, 1.6, 19.0), "dark", rot=PG)                # grip cap
 SHOTGUN = elements
 
+# ---------------- geometry: pala-pistol ----------------
+# A retro energy pistol: dark red body, a glowing yellow core in an open cage, coil rings, hoses arching over the
+# top, a copper capacitor and a needle emitter with prongs. Barrel toward north (-z) like the other guns.
+def tex_banded(base, every=3, f=0.75, vertical=False):
+    """Windings / ribs: darker lines every few pixels."""
+    im = tex_metal(base, 0, edge=False); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            if ((y if vertical else x) % every) == 0: px[x, y] = shade(base, f)
+    return im
+def tex_glow():
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            c = 1.0 - 0.12 * abs(y - 7.5) / 7.5
+            px[x, y] = (255, clamp(236 * c + 10), clamp(90 * c), 255)
+    return im
+def tex_grip():
+    im = tex_metal((44, 40, 42), 0, edge=False); px = im.load()
+    for y in range(2, 14, 3):
+        for x in range(16): px[x, y] = shade((44, 40, 42), 0.7)
+    return im
+PALA_TEX = {"body": tex_metal((122, 24, 30)), "body_dark": tex_metal((86, 16, 22), 0, edge=False),
+            "glow": tex_glow(), "coil": tex_banded((64, 66, 72), 2, 0.7), "copper": tex_banded((178, 98, 52), 3, 0.8),
+            "hose": tex_banded((36, 36, 38), 2, 0.75), "metal": tex_metal((156, 160, 168)), "grip": tex_grip(),
+            "dark": flat((22, 22, 26))}
+for k, im in PALA_TEX.items(): im.save(path("assets", NS, "textures", "item", "pala_pistol", k + ".png"))
+
+elements = []
+# rear housing, rounded on top and at the back, with a glowing indicator light on each side
+box((5.6, 8.0, 3.0), (10.4, 13.4, 12.0), "body")
+box((6.0, 13.4, 4.0), (10.0, 14.3, 11.0), "body")
+box((6.0, 8.6, 12.0), (10.0, 12.8, 13.0), "body")
+box((5.35, 9.4, 7.6), (5.62, 11.8, 10.0), "glow")                     # indicator light (left)
+box((10.38, 9.4, 7.6), (10.65, 11.8, 10.0), "glow")                   # indicator light (right)
+box((5.45, 9.0, 7.2), (5.6, 12.2, 10.4), "dark")                     # light bezels
+box((10.4, 9.0, 7.2), (10.55, 12.2, 10.4), "dark")
+# the glowing core inside an open cage
+round_prism(8, 10.8, 2.8, -8.0, 3.2, "glow")
+for x0, y0 in ((5.9, 12.7), (9.5, 12.7), (5.9, 8.3), (9.5, 8.3)):    # cage bars
+    box((x0, y0, -8.0), (x0 + 0.6, y0 + 0.6, 3.0), "body_dark")
+box((7.0, 7.3, -8.0), (9.0, 8.3, 3.0), "body")                       # spine under the cage
+# coil rings round the back of the core, and a ring holding the front of the cage
+for z in (1.2, -0.4, -2.0):
+    round_prism(8, 10.8, 6.0, z, z + 0.8, "coil")
+round_prism(8, 10.8, 6.0, -8.8, -7.8, "body")
+# two hoses arching over the top, from the housing to the front ring
+for hx in (6.6, 8.6):
+    box((hx, 13.4, 3.1), (hx + 0.8, 15.9, 3.9), "hose")
+    box((hx, 15.1, -5.6), (hx + 0.8, 15.9, 3.1), "hose")
+    box((hx, 13.4, -6.4), (hx + 0.8, 15.9, -5.6), "hose")
+# copper capacitor, front cap and the needle emitter with four prongs
+round_prism(8, 10.8, 4.6, -12.0, -8.8, "copper")
+round_prism(8, 10.8, 3.2, -13.0, -12.0, "body")
+box((7.6, 10.4, -16.0), (8.4, 11.2, -13.0), "metal")                 # needle
+box((7.75, 10.55, -16.4), (8.25, 11.05, -16.0), "glow")              # glowing tip
+for dx, dy in ((-2.0, 0), (2.0, 0), (0, -2.0), (0, 2.0)):           # prongs
+    box((8 + dx - 0.2, 10.8 + dy - 0.2, -15.0), (8 + dx + 0.2, 10.8 + dy + 0.2, -12.0), "metal")
+# trigger and a raked-back grip with finger grooves
+box((7.5, 5.8, 3.8), (8.5, 8.0, 4.6), "metal", rot=("x", 22.5, (8, 7.6, 4.2)))
+PG = ("x", -22.5, (8, 8.0, 9.0))
+box((6.2, 0.4, 6.6), (9.8, 8.1, 11.0), "grip", rot=PG)
+box((5.9, 0.8, 7.1), (10.1, 7.6, 10.5), "grip", rot=PG)              # rounded sides
+for y in (5.8, 4.0, 2.2):                                            # finger ridges
+    box((6.5, y, 6.1), (9.5, y + 0.8, 6.6), "grip", rot=PG)
+box((5.8, -0.4, 6.4), (10.2, 0.4, 11.2), "body", rot=PG)             # flared base
+for e in elements:   # the yellow parts glow in the dark
+    if any(f["texture"] == "#glow" for f in e["faces"].values()): e["light_emission"] = 15
+PALA = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -470,6 +540,16 @@ SHOTGUN_DISPLAY = {
     "thirdperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
     "thirdperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
 }
+PALA_DISPLAY = {
+    "gui":                   centred(PALA, (0, 90, 0), 0.5),
+    "ground":                centred(PALA, (0, 90, 0), 0.36),
+    "fixed":                 centred(PALA, (0, 90, 0), 0.54),
+    "head":                  centred(PALA, (0, 0, 0), 0.5, (0, 8, 0)),
+    "firstperson_righthand": centred(PALA, (0, 0, 0), 0.55, (4, -1, -5)),
+    "firstperson_lefthand":  centred(PALA, (0, 0, 0), 0.55, (4, -1, -5)),
+    "thirdperson_righthand": centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
+    "thirdperson_lefthand":  centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -492,6 +572,7 @@ write_item("hand_cannon", GUN, TEX, GUN_DISPLAY, "frame")
 write_item("nail_bat", BAT, BAT_TEX, BAT_DISPLAY, "wood")
 write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
 write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
+write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -547,6 +628,7 @@ def render(els, tex, yaw, pitch, roll=0, size=420, pad=30):
 rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 180, 8), render(GUN, TEX, 0, 0)],
         [render(TOMMY, TOMMY_TEX, -90, 0), render(TOMMY, TOMMY_TEX, -130, 18), render(TOMMY, TOMMY_TEX, 180, 8), render(TOMMY, TOMMY_TEX, -60, -15)],
         [render(SHOTGUN, SG_TEX, -90, 0), render(SHOTGUN, SG_TEX, -130, 18), render(SHOTGUN, SG_TEX, 180, 8), render(SHOTGUN, SG_TEX, -60, -15)],
+        [render(PALA, PALA_TEX, -90, 0), render(PALA, PALA_TEX, -130, 18), render(PALA, PALA_TEX, 180, 8), render(PALA, PALA_TEX, -60, -15)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):

@@ -52,6 +52,7 @@ import java.util.UUID;
 public final class HandCannonPlugin extends JavaPlugin implements Listener, TabExecutor {
     private NamespacedKey gunKey, tommyKey, shotgunKey;
     private NailBat bat;
+    private PalaPistol pala;
     /** Last tick each player fired the Tommy gun, so one click can't fire twice (both hands, block + entity events). */
     private final Map<UUID, Integer> lastTommyShot = new HashMap<>();
 
@@ -64,15 +65,22 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         tommyKey = new NamespacedKey(this, "tommy_gun");
         shotgunKey = new NamespacedKey(this, "shotgun");
         bat = new NailBat(this);
+        pala = new PalaPistol(this);
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(bat, this);
+        getServer().getPluginManager().registerEvents(pala, this);
         var cmd = getCommand("handcannon");
         if (cmd != null) { cmd.setExecutor(this); cmd.setTabCompleter(this); }
     }
 
+    @Override
+    public void onDisable() {
+        if (pala != null) pala.releaseAll();   // nobody stays stunned across a restart
+    }
+
     // ---------------------------------------------------------------- items
 
-    private ItemStack makeGun(NamespacedKey key, String name, String hint, String model) {
+    ItemStack makeGun(NamespacedKey key, String name, String hint, String model) {
         ItemStack it = new ItemStack(Material.CARROT_ON_A_STICK);   // right-click on air always reaches the server
         ItemMeta m = it.getItemMeta();
         m.displayName(Component.text(name, NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
@@ -299,17 +307,17 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         String sub = args.length == 0 ? "give" : args[0].toLowerCase();
         switch (sub) {
             case "give" -> {
-                // /hc give [gun|tommy|shotgun|bat] [player]; the item can be left out (gun)
+                // /hc give [gun|tommy|shotgun|pala|bat] [player]; the item can be left out (gun)
                 int i = 1;
                 String what = "gun";
-                if (args.length > i && List.of("gun", "tommy", "shotgun", "bat").contains(args[i].toLowerCase())) what = args[i++].toLowerCase();
+                if (args.length > i && List.of("gun", "tommy", "shotgun", "pala", "bat").contains(args[i].toLowerCase())) what = args[i++].toLowerCase();
                 Player target;
                 if (args.length > i) target = Bukkit.getPlayerExact(args[i]);
                 else target = sender instanceof Player self ? self : null;
-                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|bat] <player>", NamedTextColor.RED)); return true; }
-                ItemStack item = switch (what) { case "bat" -> bat.create(); case "tommy" -> createTommy(); case "shotgun" -> createShotgun(); default -> createGun(); };
+                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|bat] <player>", NamedTextColor.RED)); return true; }
+                ItemStack item = switch (what) { case "bat" -> bat.create(); case "tommy" -> createTommy(); case "shotgun" -> createShotgun(); case "pala" -> pala.create(); default -> createGun(); };
                 target.getInventory().addItem(item).values().forEach(left -> target.getWorld().dropItem(target.getLocation(), left));
-                sender.sendMessage(Component.text("Gave a " + switch (what) { case "bat" -> "Nail Bat"; case "tommy" -> "Tommy Gun"; case "shotgun" -> "Double Barrel"; default -> "Hand Cannon"; } + " to " + target.getName(), NamedTextColor.GOLD));
+                sender.sendMessage(Component.text("Gave a " + switch (what) { case "bat" -> "Nail Bat"; case "tommy" -> "Tommy Gun"; case "shotgun" -> "Double Barrel"; case "pala" -> "Pala-Pistol"; default -> "Hand Cannon"; } + " to " + target.getName(), NamedTextColor.GOLD));
             }
             case "reload" -> {
                 reloadConfig();
@@ -320,7 +328,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
                 if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " pack <player>", NamedTextColor.RED)); return true; }
                 sendPack(target);
             }
-            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|bat] [player] | reload | pack [player]", NamedTextColor.RED));
+            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|bat] [player] | reload | pack [player]", NamedTextColor.RED));
         }
         return true;
     }
@@ -331,7 +339,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (args.length == 1) {
             for (String s : List.of("give", "reload", "pack")) if (s.startsWith(args[0].toLowerCase())) out.add(s);
         } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            for (String s : List.of("gun", "tommy", "shotgun", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
+            for (String s : List.of("gun", "tommy", "shotgun", "pala", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[1].toLowerCase())) out.add(pl.getName());
         } else if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[2].toLowerCase())) out.add(pl.getName());

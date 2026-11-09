@@ -22,6 +22,12 @@ shotgun:                    # the Double Barrel: right-click fires a blast of pe
   knockback: 1.0            # full shove when every pellet hits
   recoil: 0.3
   pitch-kick: 4.0           # degrees the view kicks upward per shot (0 = off)
+pala:                       # the Pala-Pistol: a slow bolt of light that stuns
+  damage: 10.0              # 10 = five hearts
+  speed: 0.8                # blocks per tick the bolt travels (an arrow at full draw is about 3)
+  range: 48                 # blocks before it fizzles out
+  stun-ticks: 60            # how long the target can't move, jump or attack (20 ticks = 1 s)
+  cooldown-ticks: 12        # time between shots
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)
