@@ -31,7 +31,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * The Umbral Lance: right-click fires an instant crimson beam that pierces everything in a line up to the first
+ * The Corruption Cannon (internally "umbral"): right-click fires an instant crimson beam that pierces everything in a line up to the first
  * wall. Each target takes damage and is wrapped in Darkness (the pulsing black vision the Warden causes).
  */
 final class UmbralLance implements Listener {
@@ -46,7 +46,8 @@ final class UmbralLance implements Listener {
         key = new NamespacedKey(plugin, "umbral_lance");
     }
 
-    ItemStack create() { return plugin.makeGun(key, "Umbral Lance", "Right-click to loose a beam of darkness", "handcannon:umbral_lance"); }
+    // shown to players as the Corruption Cannon; the id stays umbral_lance so cannons already given keep working
+    ItemStack create() { return plugin.makeGun(key, "Corruption Cannon", "Right-click to loose a beam of darkness", "handcannon:umbral_lance"); }
 
     boolean is(ItemStack it) {
         return it != null && it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(key, PersistentDataType.BYTE);

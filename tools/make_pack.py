@@ -601,7 +601,7 @@ box((6.1, 1.4, 7.7), (9.9, 8.4, 10.3), "rubber", rot=PG)
 box((6.0, 0.4, 7.0), (10.0, 1.0, 11.0), "rubber", rot=PG)
 GOO = elements
 
-# ---------------- geometry: umbral lance ----------------
+# ---------------- geometry: corruption cannon (files keep the old name, umbral_lance) ----------------
 # An ominous darkness weapon: a long tapering spike of glowing red crystal, shards bursting out of it, set in a
 # black, thorned receiver with a
 # red gem each side and a tall fin carrying a red rune, a long stock rising to a flared tail, a tall blade-like
