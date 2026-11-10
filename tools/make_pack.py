@@ -511,18 +511,43 @@ def tex_honey_standin():
             px[x, y] = (236, 168, 40, 255) if (x * 7 + y * 3) % 11 else (250, 206, 92, 255)
     return im
 def tex_gauge():
-    """Round pressure gauge: white dial, dark rim, tick marks, red needle; the corners are see-through."""
-    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
-    d.ellipse((0, 0, 15, 15), fill=(40, 40, 44, 255))
-    d.ellipse((1, 1, 14, 14), fill=(242, 238, 224, 255))
-    for ang in range(-135, 136, 45):                                  # tick marks round the dial
-        a = math.radians(ang - 90)
-        x, y = 7.5 + math.cos(a) * 5.4, 7.5 + math.sin(a) * 5.4
-        d.point((round(x), round(y)), fill=(40, 40, 44, 255))
-    a = math.radians(40 - 90)                                         # needle, pointing up and right
-    d.line((7.5, 7.5, 7.5 + math.cos(a) * 5, 7.5 + math.sin(a) * 5), fill=(210, 30, 30, 255), width=1)
-    d.rectangle((7, 7, 8, 8), fill=(40, 40, 44, 255))                 # centre pin
-    return im
+    """Decorative pressure gauge, drawn big and scaled to 64x64 (four times the usual detail): chrome rim with
+    screws, cream dial with a green / yellow / red pressure band, ticks, a PSI label, a red needle well into the
+    yellow (pressure building), a hub and a glint on the glass. Outside the rim is see-through."""
+    from PIL import ImageFont
+    S = 256; c = S / 2
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    def pt(deg, r):   # deg 0 = straight up, clockwise
+        a = math.radians(deg - 90); return (c + math.cos(a) * r, c + math.sin(a) * r)
+    d.ellipse((2, 2, S - 3, S - 3), fill=(120, 124, 132, 255))                    # chrome rim
+    d.ellipse((8, 8, S - 9, S - 9), fill=(196, 200, 208, 255))
+    d.ellipse((18, 18, S - 19, S - 19), fill=(60, 62, 68, 255))
+    for deg in (45, 135, 225, 315):                                               # rim screws
+        x, y = pt(deg, S / 2 - 12); d.ellipse((x - 5, y - 5, x + 5, y + 5), fill=(88, 90, 96, 255))
+        d.line((x - 3, y - 3, x + 3, y + 3), fill=(40, 40, 44, 255), width=2)
+    d.ellipse((24, 24, S - 25, S - 25), fill=(244, 238, 222, 255))                # dial face
+    START, SWEEP = -135, 270                                                      # 0..100 % runs over 270 degrees
+    def arc(p0, p1, col):
+        box_ = (40, 40, S - 41, S - 41)
+        d.arc(box_, START + SWEEP * p0 - 90, START + SWEEP * p1 - 90, fill=col, width=14)
+    arc(0.0, 0.6, (70, 170, 80, 255)); arc(0.6, 0.85, (236, 196, 40, 255)); arc(0.85, 1.0, (214, 46, 40, 255))
+    for i in range(51):                                                           # ticks: major every 10 %
+        deg = START + SWEEP * i / 50
+        major = i % 5 == 0
+        d.line((*pt(deg, 64 if major else 72), *pt(deg, 84)), fill=(34, 34, 38, 255), width=5 if major else 2)
+    try: font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 30)
+    except Exception: font = ImageFont.load_default()
+    d.text((c, c + 52), "PSI", fill=(34, 34, 38, 255), font=font, anchor="mm")
+    needle = START + SWEEP * 0.78                                                 # pressure building
+    tip, tail = pt(needle, 80), pt(needle + 180, 18)
+    left, right = pt(needle - 90, 11), pt(needle + 90, 11)
+    d.polygon([tip, left, tail, right], fill=(206, 28, 28, 255))
+    d.ellipse((c - 14, c - 14, c + 14, c + 14), fill=(40, 40, 44, 255))          # hub
+    d.ellipse((c - 6, c - 6, c + 6, c + 6), fill=(150, 154, 162, 255))
+    glare = Image.new("RGBA", (S, S), (0, 0, 0, 0)); g = ImageDraw.Draw(glare)    # glint on the glass
+    g.arc((40, 40, S - 41, S - 41), 200, 250, fill=(255, 255, 255, 110), width=18)
+    im = Image.alpha_composite(im, glare)
+    return im.resize((64, 64), Image.LANCZOS)
 GOO_TEX = {"steel": tex_metal((178, 182, 190)), "gauge": tex_gauge(), "nozzle": tex_metal((176, 168, 132)), "navy": tex_metal((38, 46, 70)),
            "rubber": tex_ribbed((34, 34, 38)), "glass": tex_glass(), "bore": tex_bore(), "dark": flat((22, 22, 26))}
 for k, im in GOO_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_cannon", k + ".png"))
@@ -541,8 +566,8 @@ round_prism(8, 11.0, 3.4, -9.6, 1.0, "steel")
 # valve box on top, then a steel ring and the navy rear section with a rounded end
 box((6.2, 12.4, -1.4), (9.8, 16.6, 2.6), "steel")                     # one solid valve box
 # pressure gauge on the back of the valve box, facing the user: a steel bezel with the dial in front of it
-round_prism(8, 14.8, 3.4, 2.6, 3.2, "steel")
-box((6.5, 13.3, 3.3), (9.5, 16.3, 3.4), "dark", {"south": "gauge"})
+round_prism(8, 14.66, 3.8, 2.6, 3.2, "steel")
+box((6.2, 12.9, 3.3), (9.8, 16.5, 3.4), "dark", {"south": "gauge"})
 round_prism(8, 11.0, 4.8, 0.6, 1.4, "steel")
 round_prism(8, 11.0, 4.4, 1.0, 13.4, "navy")
 round_prism(8, 11.0, 3.6, 13.4, 14.2, "navy")
