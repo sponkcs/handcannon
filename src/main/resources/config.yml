@@ -28,6 +28,11 @@ pala:                       # the Pala-Pistol: a slow bolt of light that stuns
   range: 48                 # blocks before it fizzles out
   stun-ticks: 60            # how long the target can't move, jump or attack (20 ticks = 1 s)
   cooldown-ticks: 12        # time between shots
+goo:                        # the Goo Cannon: a glob of honey that traps whatever it hits (no damage)
+  speed: 1.4                # how hard the glob is lobbed (a thrown snowball is 1.5)
+  trap-ticks: 70            # how long the target is stuck in goo (20 ticks = 1 s; 70 = 3.5 s)
+  break-free-presses: 12    # Shift presses a trapped player needs to break out early
+  cooldown-ticks: 20        # time between shots
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)

@@ -486,6 +486,80 @@ for e in elements:   # the yellow parts glow in the dark
     if any(f["texture"] == "#glow" for f in e["faces"].values()): e["light_emission"] = 15
 PALA = elements
 
+# ---------------- geometry: goo cannon ----------------
+# Worn nozzle and steel tube up front with a vertical grip, a valve box on top, a navy rear section with a pistol
+# grip and bar trigger, and a tilted canister of clear glass full of goo. The goo uses Minecraft's own honey block
+# texture (pointed at directly, so nothing is copied); "fluid" below is only a stand-in for preview.png.
+def tex_glass():
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            a = 70
+            if x in (0, 15) or y in (0, 15): a = 150                 # rim
+            if x in (3, 4): a = 125                                  # highlight streak
+            px[x, y] = (226, 240, 248, a)
+    return im
+def tex_ribbed(base):
+    im = tex_metal(base, 0, edge=False); px = im.load()
+    for y in range(0, 16, 3):
+        for x in range(16): px[x, y] = shade(base, 0.7)
+    return im
+def tex_honey_standin():
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            px[x, y] = (236, 168, 40, 255) if (x * 7 + y * 3) % 11 else (250, 206, 92, 255)
+    return im
+GOO_TEX = {"steel": tex_metal((178, 182, 190)), "nozzle": tex_metal((176, 168, 132)), "navy": tex_metal((38, 46, 70)),
+           "rubber": tex_ribbed((34, 34, 38)), "glass": tex_glass(), "bore": tex_bore(), "dark": flat((22, 22, 26))}
+for k, im in GOO_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_cannon", k + ".png"))
+GOO_PREVIEW_TEX = dict(GOO_TEX, fluid=tex_honey_standin())
+GOO_TEX_PATHS = {"fluid": "minecraft:block/honey_block_side"}
+
+elements = []
+# nozzle, collar with a knob, steel front tube
+round_prism(8, 11.0, 4.6, -15.0, -12.0, "nozzle")
+box((6.6, 9.6, -15.32), (9.4, 12.4, -15.22), "bore")                  # outlet
+round_prism(8, 11.0, 4.0, -12.0, -9.6, "steel")
+box((7.4, 12.9, -11.2), (8.6, 14.4, -10.2), "steel")                  # knob
+box((7.2, 14.4, -11.4), (8.8, 14.9, -10.0), "dark")
+round_prism(8, 11.0, 3.4, -9.6, 1.0, "steel")
+# valve box on top, then a steel ring and the navy rear section with a rounded end
+box((6.2, 12.4, -1.4), (9.8, 16.6, 2.6), "steel")
+box((6.15, 12.45, 0.4), (9.85, 16.7, 0.6), "dark")                    # seam
+round_prism(8, 11.0, 4.8, 0.6, 1.4, "steel")
+round_prism(8, 11.0, 4.4, 1.0, 13.4, "navy")
+round_prism(8, 11.0, 3.6, 13.4, 14.2, "navy")
+# front vertical grip hanging from the collar
+box((7.6, 4.6, -11.2), (8.4, 9.2, -10.4), "steel")                    # rod
+box((5.8, 4.0, -12.6), (10.2, 4.6, -9.0), "rubber")                   # guard flange
+box((6.8, -3.0, -12.0), (9.2, 4.0, -9.6), "rubber")                   # handle
+box((6.0, -3.6, -12.6), (10.0, -3.0, -9.0), "rubber")                 # end flange
+# the canister: tilted back, clear glass, goo inside (filled most of the way), steel caps and two straps
+box((7.2, 5.6, -0.6), (8.8, 9.4, 1.0), "steel", rot=("x", -22.5, (8, 9.0, 0.2)))   # neck
+CAN = ("x", -22.5, (8, 6.0, 0.4))
+box((5.0, 5.4, -2.6), (11.0, 6.4, 3.4), "steel", rot=CAN)             # top cap
+box((5.6, -5.5, -1.0), (10.4, 2.8, 1.8), "fluid", rot=CAN)            # goo
+box((6.6, -5.46, -2.0), (9.4, 2.84, 2.8), "fluid", rot=CAN)
+box((5.2, -5.6, -2.4), (10.8, 5.4, 3.2), "glass", rot=CAN)            # glass
+box((5.0, -6.6, -2.6), (11.0, -5.6, 3.4), "steel", rot=CAN)           # bottom cap
+for y0 in (0.6, -3.4):                                                # straps round the glass
+    box((5.05, y0, -2.4), (5.2, y0 + 0.6, 3.2), "dark", rot=CAN)
+    box((10.8, y0, -2.4), (10.95, y0 + 0.6, 3.2), "dark", rot=CAN)
+    box((5.05, y0, -2.55), (10.95, y0 + 0.6, -2.4), "dark", rot=CAN)
+    box((5.05, y0, 3.2), (10.95, y0 + 0.6, 3.35), "dark", rot=CAN)
+# bar trigger, a looping guard and the pistol grip
+box((6.8, 7.8, 3.8), (9.2, 8.8, 5.6), "rubber")                       # trigger mount
+box((7.6, 3.6, 4.4), (8.4, 7.8, 5.0), "steel")                        # trigger bar
+box((7.4, 3.0, 4.2), (8.6, 3.6, 6.6), "steel")                        # trigger foot
+box((7.3, 2.2, 2.2), (8.7, 8.8, 2.8), "rubber", rot=("x", -22.5, (8, 8.8, 2.5)))  # guard, sloping back
+box((7.3, 1.6, 4.6), (8.7, 2.2, 8.6), "rubber")                       # guard bottom
+PG = ("x", -22.5, (8, 8.6, 9.0))
+box((6.4, 1.0, 7.2), (9.6, 8.8, 10.8), "rubber", rot=PG)
+box((6.1, 1.4, 7.7), (9.9, 8.4, 10.3), "rubber", rot=PG)
+box((6.0, 0.4, 7.0), (10.0, 1.0, 11.0), "rubber", rot=PG)
+GOO = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -557,6 +631,16 @@ PALA_DISPLAY = {
     "thirdperson_righthand": centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
     "thirdperson_lefthand":  centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
 }
+GOO_DISPLAY = {
+    "gui":                   centred(GOO, (0, 90, 0), 0.46),
+    "ground":                centred(GOO, (0, 90, 0), 0.34),
+    "fixed":                 centred(GOO, (0, 90, 0), 0.5),
+    "head":                  centred(GOO, (0, 0, 0), 0.45, (0, 8, 0)),
+    "firstperson_righthand": centred(GOO, (0, 0, 0), 0.5, (4, -1, -5)),
+    "firstperson_lefthand":  centred(GOO, (0, 0, 0), 0.5, (4, -1, -5)),
+    "thirdperson_righthand": centred(GOO, (0, 0, 0), 0.5, (0, 3, -2)),
+    "thirdperson_lefthand":  centred(GOO, (0, 0, 0), 0.5, (0, 3, -2)),
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -570,8 +654,11 @@ BAT_DISPLAY = {
     "firstperson_lefthand":  {"rotation": [0, 90, 20], "translation": [1.13, 5.5, 1.13], "scale": [0.62] * 3},
 }
 
-def write_item(name, els, tex, display, particle):
-    model = {"textures": {**{k: f"{NS}:item/{name}/{k}" for k in tex}, "particle": f"{NS}:item/{name}/{particle}"},
+def write_item(name, els, tex, display, particle, paths=None):
+    """paths: texture keys pointed somewhere other than this item's own folder (e.g. a vanilla texture)."""
+    paths = paths or {}
+    model = {"textures": {**{k: paths.get(k, f"{NS}:item/{name}/{k}") for k in tex}, **paths,
+                          "particle": f"{NS}:item/{name}/{particle}"},
              "gui_light": "side", "elements": els, "display": display}
     wjson(path("assets", NS, "models", "item", name + ".json"), model)
     wjson(path("assets", NS, "items", name + ".json"), {"model": {"type": "minecraft:model", "model": f"{NS}:item/{name}"}})
@@ -580,6 +667,7 @@ write_item("nail_bat", BAT, BAT_TEX, BAT_DISPLAY, "wood")
 write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
 write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
 write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
+write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -624,18 +712,25 @@ def render(els, tex, yaw, pitch, roll=0, size=420, pad=30):
                     def at(u, w): return lerp(lerp(v[0], v[1], u), lerp(v[3], v[2], u), w)
                     cell = [at(i / N, j / N), at((i + 1) / N, j / N), at((i + 1) / N, (j + 1) / N), at(i / N, (j + 1) / N)]
                     tx = int(uv[0] + (uv[2] - uv[0]) * (i + 0.5) / N) % 16; ty = int(uv[1] + (uv[3] - uv[1]) * (j + 0.5) / N) % 16
-                    quads.append((depth, cell, tuple(clamp(c * sh * 1.1) for c in im[tx, ty][:3])))
+                    px_ = im[tx, ty]
+                    a_ = px_[3] if len(px_) > 3 else 255
+                    if a_ == 0: continue
+                    quads.append((depth, cell, tuple(clamp(c * sh * 1.1) for c in px_[:3]), a_))
     xs = [p[0] for q in quads for p in q[1]]; ys = [p[1] for q in quads for p in q[1]]
     s = (size - 2 * pad) / max(max(xs) - min(xs), max(ys) - min(ys))
     cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
     im = Image.new("RGBA", (size, size), (38, 40, 46, 255)); d = ImageDraw.Draw(im)
-    for _, v, col in sorted(quads, key=lambda q: q[0]):
-        d.polygon([(size / 2 + (p[0] - cx) * s, size / 2 - (p[1] - cy) * s) for p in v], fill=col + (255,), outline=col + (255,))
-    return im
+    glass = Image.new("RGBA", (size, size), (0, 0, 0, 0)); g = ImageDraw.Draw(glass)
+    for _, v, col, a in sorted(quads, key=lambda q: q[0]):
+        pts = [(size / 2 + (p[0] - cx) * s, size / 2 - (p[1] - cy) * s) for p in v]
+        if a >= 250: d.polygon(pts, fill=col + (255,), outline=col + (255,))
+        else: g.polygon(pts, fill=col + (a,))          # translucent: blended on top afterwards
+    return Image.alpha_composite(im, glass)
 rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 180, 8), render(GUN, TEX, 0, 0)],
         [render(TOMMY, TOMMY_TEX, -90, 0), render(TOMMY, TOMMY_TEX, -130, 18), render(TOMMY, TOMMY_TEX, 180, 8), render(TOMMY, TOMMY_TEX, -60, -15)],
         [render(SHOTGUN, SG_TEX, -90, 0), render(SHOTGUN, SG_TEX, -130, 18), render(SHOTGUN, SG_TEX, 180, 8), render(SHOTGUN, SG_TEX, -60, -15)],
         [render(PALA, PALA_TEX, -90, 0), render(PALA, PALA_TEX, -130, 18), render(PALA, PALA_TEX, 180, 8), render(PALA, PALA_TEX, -60, -15)],
+        [render(GOO, GOO_PREVIEW_TEX, -90, 0), render(GOO, GOO_PREVIEW_TEX, -130, 18), render(GOO, GOO_PREVIEW_TEX, 180, 8), render(GOO, GOO_PREVIEW_TEX, -60, -15)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):
