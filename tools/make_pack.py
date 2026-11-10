@@ -488,7 +488,7 @@ PALA = elements
 
 # ---------------- geometry: goo cannon ----------------
 # Worn nozzle and steel tube up front with a vertical grip, a valve box on top, a navy rear section with a pistol
-# grip and bar trigger, and a tilted canister of clear glass full of goo. The goo uses Minecraft's own honey block
+# grip and bar trigger, a pressure gauge facing the user, and a tilted canister of clear glass full of goo. The goo uses Minecraft's own honey block
 # texture (pointed at directly, so nothing is copied); "fluid" below is only a stand-in for preview.png.
 def tex_glass():
     im = Image.new("RGBA", (16, 16)); px = im.load()
@@ -510,10 +510,24 @@ def tex_honey_standin():
         for x in range(16):
             px[x, y] = (236, 168, 40, 255) if (x * 7 + y * 3) % 11 else (250, 206, 92, 255)
     return im
-GOO_TEX = {"steel": tex_metal((178, 182, 190)), "nozzle": tex_metal((176, 168, 132)), "navy": tex_metal((38, 46, 70)),
+def tex_gauge():
+    """Round pressure gauge: white dial, dark rim, tick marks, red needle; the corners are see-through."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    d.ellipse((0, 0, 15, 15), fill=(40, 40, 44, 255))
+    d.ellipse((1, 1, 14, 14), fill=(242, 238, 224, 255))
+    for ang in range(-135, 136, 45):                                  # tick marks round the dial
+        a = math.radians(ang - 90)
+        x, y = 7.5 + math.cos(a) * 5.4, 7.5 + math.sin(a) * 5.4
+        d.point((round(x), round(y)), fill=(40, 40, 44, 255))
+    a = math.radians(40 - 90)                                         # needle, pointing up and right
+    d.line((7.5, 7.5, 7.5 + math.cos(a) * 5, 7.5 + math.sin(a) * 5), fill=(210, 30, 30, 255), width=1)
+    d.rectangle((7, 7, 8, 8), fill=(40, 40, 44, 255))                 # centre pin
+    return im
+GOO_TEX = {"steel": tex_metal((178, 182, 190)), "gauge": tex_gauge(), "nozzle": tex_metal((176, 168, 132)), "navy": tex_metal((38, 46, 70)),
            "rubber": tex_ribbed((34, 34, 38)), "glass": tex_glass(), "bore": tex_bore(), "dark": flat((22, 22, 26))}
 for k, im in GOO_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_cannon", k + ".png"))
 GOO_PREVIEW_TEX = dict(GOO_TEX, fluid=tex_honey_standin())
+FULL_UV.add("gauge")
 GOO_TEX_PATHS = {"fluid": "minecraft:block/honey_block_side"}
 
 elements = []
@@ -525,8 +539,10 @@ box((7.4, 12.9, -11.2), (8.6, 14.4, -10.2), "steel")                  # knob
 box((7.2, 14.4, -11.4), (8.8, 14.9, -10.0), "dark")
 round_prism(8, 11.0, 3.4, -9.6, 1.0, "steel")
 # valve box on top, then a steel ring and the navy rear section with a rounded end
-box((6.2, 12.4, -1.4), (9.8, 16.6, 2.6), "steel")
-box((6.15, 12.45, 0.4), (9.85, 16.7, 0.6), "dark")                    # seam
+box((6.2, 12.4, -1.4), (9.8, 16.6, 2.6), "steel")                     # one solid valve box
+# pressure gauge on the back of the valve box, facing the user: a steel bezel with the dial in front of it
+round_prism(8, 14.8, 3.4, 2.6, 3.2, "steel")
+box((6.5, 13.3, 3.3), (9.5, 16.3, 3.4), "dark", {"south": "gauge"})
 round_prism(8, 11.0, 4.8, 0.6, 1.4, "steel")
 round_prism(8, 11.0, 4.4, 1.0, 13.4, "navy")
 round_prism(8, 11.0, 3.6, 13.4, 14.2, "navy")
