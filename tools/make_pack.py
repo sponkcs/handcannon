@@ -720,7 +720,18 @@ def blade_frame(i, n):
             if abs(g) < 2.2: c = tuple(min(255, v + 40) for v in c)
             px[x, y] = c + (255,)
     return im
-SWORD_TEX = {"gold": tex_metal((230, 186, 70)), "grip": tex_banded((92, 54, 32), 3, 0.7, vertical=True),
+def tex_ruby():
+    """Cut ruby: deep red facets with lighter bevels and a bright glint."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            c = (120, 6, 22) if d > 6 else (186, 14, 38) if d > 3.5 else (214, 26, 52)
+            if (x + y) % 6 == 0 and d <= 6: c = tuple(min(255, v + 30) for v in c)    # facet lines
+            px[x, y] = c + (255,)
+    for x, y in ((4, 4), (5, 4), (4, 5)): px[x, y] = (255, 180, 190, 255)          # glint
+    return im
+SWORD_TEX = {"gold": tex_metal((230, 186, 70)), "ruby": tex_ruby(), "grip": tex_banded((92, 54, 32), 3, 0.7, vertical=True),
              "blade": frames_strip(blade_frame, 16), "radiance": frames_strip(radiance_frame, 16)}
 ANIMATED = {"blade": {"frametime": 3, "interpolate": True}, "radiance": {"frametime": 3, "interpolate": True}}
 for k, im in SWORD_TEX.items():
@@ -748,7 +759,8 @@ hb((9.6, 5.4, 7.1), (10.8, 8.2, 8.9), "gold")
 hb((5.8, 8.2, 7.1), (7.0, 9.2, 8.9), "gold")
 hb((9.0, 8.2, 7.1), (10.2, 9.2, 8.9), "gold")
 hb((6.6, 9.2, 7.1), (9.4, 10.0, 8.9), "gold")                        # top of the loop
-hb((6.5, 3.65, 7.85), (9.5, 9.15, 8.15), "radiance")                 # pane of light inside the loop
+hb((6.5, 3.65, 7.55), (9.5, 9.15, 8.45), "ruby")                     # a ruby set in the loop
+hb((7.1, 4.6, 7.35), (8.9, 8.2, 8.65), "ruby")                       # its raised, cut table
 # the blade: steel rising from the loop, tapering to a point
 BASE = 10.0 + H
 box((6.4, BASE, 7.6), (9.6, 26.0, 8.4), "blade")
