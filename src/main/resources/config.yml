@@ -38,6 +38,9 @@ umbral:                     # the Corruption Cannon: an instant crimson beam tha
   range: 40                 # blocks, or up to the first wall
   darkness-ticks: 100       # how long targets get the Darkness effect (20 ticks = 1 s; 0 = off)
   cooldown-ticks: 24        # time between shots
+ankh:                       # the Radiant Ankh sword (stamped on each sword when it is given)
+  damage: 10.0              # per full-strength hit (10 = five hearts)
+  attack-speed: 1.6         # swings per second, same as a vanilla sword
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)

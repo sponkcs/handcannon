@@ -692,6 +692,78 @@ for e in elements:   # the crystal glows faintly in the dark
     if any(f["texture"] == "#crystal" for f in e["faces"].values()): e["light_emission"] = 10
 UMBRAL = elements
 
+# ---------------- geometry: radiant ankh (sword) ----------------
+# A sword whose handle and hilt are an ankh: the stem is the grip, the crossbar is the guard, and the loop holds a
+# pane of light; the blade rises from the top of the loop. Its edges carry radiant light. Two textures are animated
+# (a strip of frames plus a .mcmeta file): the edge light shimmers upward and a gleam sweeps along the steel.
+def frames_strip(draw_frame, n):
+    strip = Image.new("RGBA", (16, 16 * n))
+    for i in range(n): strip.paste(draw_frame(i, n), (0, 16 * i))
+    return strip
+def radiance_frame(i, n):
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            wave = 0.5 + 0.5 * math.cos(2 * math.pi * ((y / 16) + i / n))   # bright band travelling up
+            core = 1 - abs(x - 7.5) / 8
+            v = 0.55 + 0.3 * wave + 0.15 * core
+            px[x, y] = (255, clamp(214 + 40 * v), clamp(110 + 140 * v * wave), 255)
+    return im
+def blade_frame(i, n):
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            c = (206, 212, 222)
+            if x in (7, 8): c = (168, 174, 188)                            # fuller down the middle
+            g = (x + (15 - y)) - (i * 32 / n) + 8                          # diagonal gleam sweeping across
+            if abs(g) < 2.2: c = tuple(min(255, v + 40) for v in c)
+            px[x, y] = c + (255,)
+    return im
+SWORD_TEX = {"gold": tex_metal((230, 186, 70)), "grip": tex_banded((92, 54, 32), 3, 0.7, vertical=True),
+             "blade": frames_strip(blade_frame, 16), "radiance": frames_strip(radiance_frame, 8)}
+ANIMATED = {"blade": {"frametime": 3, "interpolate": True}, "radiance": {"frametime": 2, "interpolate": True}}
+for k, im in SWORD_TEX.items():
+    im.save(path("assets", NS, "textures", "item", "radiant_ankh", k + ".png"))
+    if k in ANIMATED: wjson(path("assets", NS, "textures", "item", "radiant_ankh", k + ".png.mcmeta"), {"animation": ANIMATED[k]})
+FULL_UV.update({"radiance"})
+
+elements = []
+# the ankh: stem as the grip with a pommel, crossbar as the guard with flared ends
+box((7.0, -8.0, 7.2), (9.0, 1.0, 8.8), "grip")
+box((6.6, -9.0, 6.8), (9.4, -8.0, 9.2), "gold")                      # pommel
+box((3.0, 1.0, 7.0), (13.0, 2.6, 9.0), "gold")                       # crossbar
+box((2.4, 0.6, 6.9), (3.0, 3.0, 9.1), "gold")                        # flared ends
+box((13.0, 0.6, 6.9), (13.6, 3.0, 9.1), "gold")
+# the loop, narrow where it meets the crossbar and round at the top
+box((6.6, 2.6, 7.1), (7.4, 3.6, 8.9), "gold")
+box((8.6, 2.6, 7.1), (9.4, 3.6, 8.9), "gold")
+box((5.8, 3.6, 7.1), (6.8, 5.4, 8.9), "gold")
+box((9.2, 3.6, 7.1), (10.2, 5.4, 8.9), "gold")
+box((5.2, 5.4, 7.1), (6.4, 8.2, 8.9), "gold")
+box((9.6, 5.4, 7.1), (10.8, 8.2, 8.9), "gold")
+box((5.8, 8.2, 7.1), (7.0, 9.2, 8.9), "gold")
+box((9.0, 8.2, 7.1), (10.2, 9.2, 8.9), "gold")
+box((6.6, 9.2, 7.1), (9.4, 10.0, 8.9), "gold")                       # top of the loop
+box((6.5, 3.65, 7.85), (9.5, 9.15, 8.15), "radiance")                # pane of light inside the loop
+# the blade: steel rising from the loop, tapering to a point
+box((6.4, 10.0, 7.6), (9.6, 26.0, 8.4), "blade")
+box((6.9, 26.0, 7.62), (9.1, 28.5, 8.38), "blade")
+box((7.4, 28.5, 7.64), (8.6, 30.4, 8.36), "blade")
+box((7.8, 30.4, 7.66), (8.2, 31.4, 8.34), "blade")
+# radiant light down both edges and over the tip, wrapping a little over the blade's faces so it outlines the edge
+box((5.6, 10.2, 7.5), (6.5, 26.03, 8.5), "radiance")
+box((9.5, 10.2, 7.5), (10.4, 26.03, 8.5), "radiance")
+box((6.3, 26.03, 7.52), (7.0, 28.53, 8.48), "radiance")
+box((9.0, 26.03, 7.52), (9.7, 28.53, 8.48), "radiance")
+box((6.9, 28.53, 7.54), (7.5, 30.43, 8.46), "radiance")
+box((8.5, 28.53, 7.54), (9.1, 30.43, 8.46), "radiance")
+box((7.35, 30.43, 7.56), (7.85, 31.43, 8.44), "radiance")
+box((8.15, 30.43, 7.56), (8.65, 31.43, 8.44), "radiance")
+box((7.55, 31.33, 7.58), (8.45, 32.0, 8.42), "radiance")                # glowing point
+for e in elements:
+    if any(f["texture"] == "#radiance" for f in e["faces"].values()): e["light_emission"] = 15
+SWORD = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -783,6 +855,17 @@ UMBRAL_DISPLAY = {
     "thirdperson_righthand": centred(UMBRAL, (0, 0, 0), 0.5, (0, 3, -1)),
     "thirdperson_lefthand":  centred(UMBRAL, (0, 0, 0), 0.5, (0, 3, -1)),
 }
+# Held like a sword, the same way as the bat below (the model stands upright where a sword sprite runs corner to corner)
+SWORD_DISPLAY = {
+    "gui":                   centred(SWORD, (0, 0, -45), 0.5),
+    "ground":                centred(SWORD, (0, 0, 0), 0.32),
+    "fixed":                 centred(SWORD, (0, 0, -45), 0.55),
+    "head":                  centred(SWORD, (0, 180, 0), 0.55, (0, 10, 0)),
+    "thirdperson_righthand": {"rotation": [0, -90, 10], "translation": [0, 9.0, 0.5], "scale": [0.6] * 3},
+    "thirdperson_lefthand":  {"rotation": [0, 90, -10], "translation": [0, 9.0, 0.5], "scale": [0.6] * 3},
+    "firstperson_righthand": {"rotation": [0, -90, -20], "translation": [1.13, 6.5, 1.13], "scale": [0.5] * 3},
+    "firstperson_lefthand":  {"rotation": [0, 90, 20], "translation": [1.13, 6.5, 1.13], "scale": [0.5] * 3},
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -811,6 +894,7 @@ write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
 write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
 write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
 write_item("umbral_lance", UMBRAL, UMB_TEX, UMBRAL_DISPLAY, "black")
+write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -875,6 +959,7 @@ rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 
         [render(PALA, PALA_TEX, -90, 0), render(PALA, PALA_TEX, -130, 18), render(PALA, PALA_TEX, 180, 8), render(PALA, PALA_TEX, -60, -15)],
         [render(GOO, GOO_PREVIEW_TEX, -90, 0), render(GOO, GOO_PREVIEW_TEX, -130, 18), render(GOO, GOO_PREVIEW_TEX, 180, 8), render(GOO, GOO_PREVIEW_TEX, -60, -15)],
         [render(UMBRAL, UMB_TEX, -90, 0), render(UMBRAL, UMB_TEX, -130, 18), render(UMBRAL, UMB_TEX, 180, 8), render(UMBRAL, UMB_TEX, -60, -15)],
+        [render(SWORD, SWORD_TEX, 0, 0, -90), render(SWORD, SWORD_TEX, 30, 20, -90), render(SWORD, SWORD_TEX, 0, 0, 0), render(SWORD, SWORD_TEX, 0, 0, -45)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):
