@@ -21,13 +21,14 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.inventory.EquipmentSlotGroup;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
-/** The Radiant Ankh: a sword whose hilt is an ankh. A plain melee weapon; every hit flares with light. */
+/** The Holy Blade (internally "radiant_ankh"): a sword whose hilt is an ankh. A melee weapon; every hit flares with light. */
 final class RadiantAnkh implements Listener {
     private static final Particle.DustOptions GOLD = new Particle.DustOptions(Color.fromRGB(255, 222, 120), 1.2f);
 
@@ -43,15 +44,16 @@ final class RadiantAnkh implements Listener {
         var cfg = plugin.getConfig();
         ItemStack it = new ItemStack(Material.STICK);
         ItemMeta m = it.getItemMeta();
-        m.displayName(Component.text("Radiant Ankh", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        m.displayName(Component.text("Holy Blade", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
         m.lore(List.of(Component.text("Light given an edge", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
         m.setItemModel(NamespacedKey.fromString("handcannon:radiant_ankh"));
         m.setMaxStackSize(1);
         // vanilla "base" modifier ids, so the tooltip shows the totals like a sword's
         m.addAttributeModifier(Attribute.ATTACK_DAMAGE, new AttributeModifier(NamespacedKey.minecraft("base_attack_damage"),
-                cfg.getDouble("ankh.damage", 10) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
+                cfg.getDouble("holy.damage", 100) - 1, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
         m.addAttributeModifier(Attribute.ATTACK_SPEED, new AttributeModifier(NamespacedKey.minecraft("base_attack_speed"),
-                cfg.getDouble("ankh.attack-speed", 1.6) - 4, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
+                cfg.getDouble("holy.attack-speed", 1.6) - 4, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.MAINHAND));
+        m.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);   // keep its damage and swing speed out of the tooltip
         m.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
         it.setItemMeta(m);
         return it;

@@ -2,11 +2,11 @@ name: HandCannon
 version: ${version}
 main: dev.handcannon.HandCannonPlugin
 api-version: '26.2'
-description: "A comically oversized snubnose revolver, a cartoon Tommy gun, a double-barrel shotgun, the Pala-Pistol, the Goo Cannon, the Corruption Cannon, the Radiant Ankh sword and a nail bat, with 3D models."
+description: "A comically oversized snubnose revolver, a cartoon Tommy gun, a double-barrel shotgun, the Pala-Pistol, the Goo Cannon, the Corruption Cannon, the Holy Blade sword and a nail bat, with 3D models."
 commands:
   handcannon:
-    description: Give the Hand Cannon, Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Radiant Ankh or Nail Bat, reload the config, or resend the resource pack
-    usage: /handcannon give [gun|tommy|shotgun|pala|goo|corruption|ankh|bat] [player] | reload | pack [player]
+    description: Give the Hand Cannon, Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade or Nail Bat, reload the config, or resend the resource pack
+    usage: /handcannon give [gun|tommy|shotgun|pala|goo|corruption|holy|bat] [player] | reload | pack [player]
     permission: handcannon.admin
     aliases: [hc]
 permissions:
