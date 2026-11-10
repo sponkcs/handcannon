@@ -602,7 +602,8 @@ box((6.0, 0.4, 7.0), (10.0, 1.0, 11.0), "rubber", rot=PG)
 GOO = elements
 
 # ---------------- geometry: umbral lance ----------------
-# An ominous darkness weapon: a long tapering spike of glowing red crystal out of a black, thorned receiver with a
+# An ominous darkness weapon: a long tapering spike of glowing red crystal, shards bursting out of it, set in a
+# black, thorned receiver with a
 # red gem each side and a tall fin carrying a red rune, a long stock rising to a flared tail, a tall blade-like
 # front grip with a red inlay and a raked rear grip. Barrel toward north (-z) like the other guns.
 def tex_crystal():
@@ -632,6 +633,34 @@ elements = []
 for z0, z1, dia in ((-16.0, -13.5, 0.8), (-13.5, -11.0, 1.4), (-11.0, -8.0, 2.0), (-8.0, -5.0, 2.6), (-5.0, -2.0, 3.2), (-2.0, 0.6, 3.8)):
     round_prism(8, 11.0, dia, z0, z1, "crystal")
 round_prism(8, 11.0, 4.7, 0.3, 1.5, "black")
+# crystal shards bursting outward along the spike: a thick base and a thinner tip, raked toward the muzzle
+def spike_radius(z):
+    for z0, z1, dia in ((-16.0, -13.5, 0.8), (-13.5, -11.0, 1.4), (-11.0, -8.0, 2.0), (-8.0, -5.0, 2.6), (-5.0, -2.0, 3.2), (-2.0, 0.6, 3.8)):
+        if z0 <= z < z1: return dia / 2
+    return 1.9
+def shard(z, way, length):
+    # each shard starts a little inside the crystal so it looks embedded
+    for w_, l_, a_ in ((0.34, 0.65, 0.0), (0.17, 1.0, 0.05)):   # base then tip (tip nudged so faces never coincide)
+        r = spike_radius(z) - 0.3 + a_
+        L = length * l_; c0, c1 = z - w_ + a_, z + w_ + a_
+        if way in ("up", "ur", "ul"):
+            frm, to = (8 - w_ + a_, 11 + r, c0), (8 + w_ + a_, 11 + r + L, c1)
+        elif way in ("down", "dr", "dl"):
+            frm, to = (8 - w_ + a_, 11 - r - L, c0), (8 + w_ + a_, 11 - r, c1)
+        elif way == "left":
+            frm, to = (8 - r - L, 11 - w_ + a_, c0), (8 - r, 11 + w_ + a_, c1)
+        else:   # right
+            frm, to = (8 + r, 11 - w_ + a_, c0), (8 + r + L, 11 + w_ + a_, c1)
+        rot = {"up": ("x", -22.5, (8, 11, z)), "down": ("x", 22.5, (8, 11, z)),
+               "left": ("y", -22.5, (8, 11, z)), "right": ("y", 22.5, (8, 11, z)),
+               "ur": ("z", -45, (8, 11, z)), "ul": ("z", 45, (8, 11, z)),
+               "dr": ("z", 45, (8, 11, z)), "dl": ("z", -45, (8, 11, z))}[way]
+        box(frm, to, "crystal", rot=rot)
+for z, way, length in ((-12.2, "up", 1.6), (-10.6, "left", 2.0), (-9.6, "down", 2.2), (-8.7, "right", 2.4),
+                       (-7.4, "up", 2.8), (-6.6, "ul", 2.2), (-6.0, "ur", 2.0), (-5.5, "left", 2.8),
+                       (-4.6, "down", 2.6), (-3.7, "dr", 2.4), (-3.0, "right", 3.0), (-2.3, "dl", 2.2),
+                       (-1.4, "up", 2.4)):
+    shard(z, way, length * 1.5)
 # receiver, with thorns jutting forward and outward, and a red gem on each side
 box((5.8, 8.6, 1.0), (10.2, 13.6, 9.0), "black")
 for y0 in (12.2, 9.2):
