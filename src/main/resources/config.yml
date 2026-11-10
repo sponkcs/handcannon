@@ -33,6 +33,11 @@ goo:                        # the Goo Cannon: a glob of honey that traps whateve
   trap-ticks: 70            # how long the target is stuck in goo (20 ticks = 1 s; 70 = 3.5 s)
   break-free-presses: 12    # Shift presses a trapped player needs to break out early
   cooldown-ticks: 20        # time between shots
+umbral:                     # the Umbral Lance: an instant crimson beam that pierces everything in a line
+  damage: 10.0              # to each target in the beam (10 = five hearts)
+  range: 40                 # blocks, or up to the first wall
+  darkness-ticks: 100       # how long targets get the Darkness effect (20 ticks = 1 s; 0 = off)
+  cooldown-ticks: 24        # time between shots
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)
