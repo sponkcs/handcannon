@@ -3,7 +3,8 @@
 A comically oversized snubnose revolver (right-click to fire), a cartoon M1-style Tommy gun with a huge drum magazine
 (hold right-click for full auto), a chunky sawed-off side-by-side shotgun (right-click for a blast of pellets),
 the Pala-Pistol (a slow bolt of light that stuns), the Goo Cannon (a glob of honey that traps), the Corruption Cannon (a piercing beam of darkness),
-the Holy Blade (a sword with an ankh hilt and animated, glowing edges) and a nail-studded baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
+the Holy Blade (a sword with an ankh hilt and animated, glowing edges), a stun grenade and a nail-studded
+baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
 
 ![preview](preview.png)
 
@@ -25,7 +26,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade or Nail Bat (op)
+    /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade, Stun Grenade or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -65,6 +66,11 @@ and tip are lined with thin radiant light that dims and brightens and glows in t
 steel (both are animated textures). It swings like a vanilla sword and does 100 damage (fifty hearts); every hit
 flares with light. Damage and speed are stamped on each sword when it is given (`holy:` in `config.yml`) and are
 kept out of its tooltip. `/hc give ankh` still works.
+
+## Stun Grenade
+Right-click throws it (one from the stack; they stack to 16). It tumbles and rolls, and after 1.5 seconds pops with a
+bang, a small puff of smoke and a brief flash that lights the area for a moment. For now it does nothing else: no
+damage and no stun. Settings are under `grenade:`.
 
 ## Nail Bat
 Left-click is a normal hit: 10 damage (five hearts) at full strength, a bit under one swing a second.

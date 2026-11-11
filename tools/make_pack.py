@@ -781,6 +781,51 @@ for e in elements:
     if any(f["texture"] == "#radiance" for f in e["faces"].values()): e["light_emission"] = 15
 SWORD = elements
 
+# ---------------- geometry: stun grenade ----------------
+# A flashbang: dark red body between two big nuts, a yellow stripe, rows of holes with brass showing through, a
+# black fuse on top with a dark red spoon running down one side, and a steel pull ring. Stands upright, centred on
+# x = z = 8 (like the bat).
+def tex_hole():
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
+    d.ellipse((0, 0, 15, 15), fill=(40, 20, 20, 255))
+    d.ellipse((2, 2, 13, 13), fill=(150, 120, 60, 255))
+    d.ellipse((4, 3, 12, 11), fill=(176, 146, 78, 255))
+    return im
+GRENADE_TEX = {"red": tex_metal((112, 24, 28)), "yellow": tex_metal((236, 192, 44), 0, edge=False),
+               "black": tex_metal((30, 30, 34)), "steel": tex_metal((172, 176, 184)), "hole": tex_hole()}
+for k, im in GRENADE_TEX.items(): im.save(path("assets", NS, "textures", "item", "stun_grenade", k + ".png"))
+FULL_UV.add("hole")
+
+elements = []
+ENDS = {"up": "red", "down": "red"}
+round_rod(8, 8, 7.0, 0.0, 3.2, "red")                               # bottom nut
+round_rod(8, 8, 5.6, 3.2, 6.8, "red")                               # body
+round_rod(8, 8, 5.72, 6.8, 8.8, "yellow")                           # yellow stripe (a hair proud of the body)
+round_rod(8, 8, 5.6, 8.8, 12.4, "red")
+round_rod(8, 8, 7.0, 12.4, 15.6, "red")                             # top nut
+# rows of holes on four sides; the middle row sits on the stripe
+for yc in (5.0, 7.8, 10.6):
+    for side in ("north", "south", "east", "west"):
+        if side == "south":   frm, to = (7.25, yc - 0.75, 10.82), (8.75, yc + 0.75, 10.9)
+        elif side == "north": frm, to = (7.25, yc - 0.75, 5.1), (8.75, yc + 0.75, 5.18)
+        elif side == "east":  frm, to = (10.82, yc - 0.75, 7.25), (10.9, yc + 0.75, 8.75)
+        else:                 frm, to = (5.1, yc - 0.75, 7.25), (5.18, yc + 0.75, 8.75)
+        box(frm, to, "black", {side: "hole"})
+# fuse head, the spoon over the top and down the side, the pin and the pull ring
+box((6.0, 15.6, 6.4), (10.0, 19.0, 9.6), "black")
+box((6.8, 19.0, 5.0), (9.2, 19.6, 12.6), "red")                     # spoon across the top
+box((6.8, 17.8, 4.4), (9.2, 19.6, 5.0), "red")                      # curled front of the spoon
+box((6.8, 5.0, 12.0), (9.2, 19.0, 12.6), "red")                     # spoon down the side
+box((6.8, 4.4, 11.4), (9.2, 5.0, 12.6), "red")                      # its foot
+box((10.0, 17.0, 7.7), (10.9, 17.6, 8.3), "steel")                  # pin
+RX = 10.9
+for frm, to in (((RX, 18.2, 7.6), (RX + 0.4, 18.6, 9.6)), ((RX, 15.0, 7.6), (RX + 0.4, 15.4, 9.6)),
+                ((RX, 15.8, 6.8), (RX + 0.4, 17.8, 7.2)), ((RX, 15.8, 10.0), (RX + 0.4, 17.8, 10.4))):
+    box(frm, to, "steel")                                           # pull ring
+for yc, zc in ((18.0, 7.2), (18.0, 10.0), (15.6, 7.2), (15.6, 10.0)):   # rounded corners of the ring
+    box((RX, yc - 0.2, zc - 0.5), (RX + 0.4, yc + 0.2, zc + 0.5), "steel", rot=("x", 45, (RX + 0.2, yc, zc)))
+GRENADE = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -883,6 +928,16 @@ SWORD_DISPLAY = {
     "firstperson_righthand": {"rotation": [0, -90, -20], "translation": [1.13, 9.5, 1.13], "scale": [0.5] * 3},
     "firstperson_lefthand":  {"rotation": [0, 90, 20], "translation": [1.13, 9.5, 1.13], "scale": [0.5] * 3},
 }
+GRENADE_DISPLAY = {
+    "gui":                   centred(GRENADE, (15, -30, 0), 0.72),
+    "ground":                centred(GRENADE, (0, 0, 0), 0.5),
+    "fixed":                 centred(GRENADE, (0, 0, 0), 0.72),
+    "head":                  centred(GRENADE, (0, 0, 0), 0.6, (0, 8, 0)),
+    "thirdperson_righthand": centred(GRENADE, (0, -90, 10), 0.5, (0, 2.5, 1.0)),
+    "thirdperson_lefthand":  centred(GRENADE, (0, 90, -10), 0.5, (0, 2.5, 1.0)),
+    "firstperson_righthand": centred(GRENADE, (0, -90, 0), 0.55, (2, 2, 0)),
+    "firstperson_lefthand":  centred(GRENADE, (0, 90, 0), 0.55, (2, 2, 0)),
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -912,6 +967,7 @@ write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
 write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
 write_item("umbral_lance", UMBRAL, UMB_TEX, UMBRAL_DISPLAY, "black")
 write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
+write_item("stun_grenade", GRENADE, GRENADE_TEX, GRENADE_DISPLAY, "red")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -977,6 +1033,7 @@ rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 
         [render(GOO, GOO_PREVIEW_TEX, -90, 0), render(GOO, GOO_PREVIEW_TEX, -130, 18), render(GOO, GOO_PREVIEW_TEX, 180, 8), render(GOO, GOO_PREVIEW_TEX, -60, -15)],
         [render(UMBRAL, UMB_TEX, -90, 0), render(UMBRAL, UMB_TEX, -130, 18), render(UMBRAL, UMB_TEX, 180, 8), render(UMBRAL, UMB_TEX, -60, -15)],
         [render(SWORD, SWORD_TEX, 0, 0, -90), render(SWORD, SWORD_TEX, 30, 20, -90), render(SWORD, SWORD_TEX, 0, 0, 0), render(SWORD, SWORD_TEX, 0, 0, -45)],
+        [render(GRENADE, GRENADE_TEX, 0, 0, 0), render(GRENADE, GRENADE_TEX, 35, 15, 0), render(GRENADE, GRENADE_TEX, -90, 0, 0), render(GRENADE, GRENADE_TEX, 120, 15, 0)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):
