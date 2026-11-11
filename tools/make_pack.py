@@ -817,13 +817,15 @@ box((6.8, 19.0, 5.0), (9.2, 19.6, 12.6), "red")                     # spoon acro
 box((6.8, 17.8, 4.4), (9.2, 19.6, 5.0), "red")                      # curled front of the spoon
 box((6.8, 5.0, 12.0), (9.2, 19.0, 12.6), "red")                     # spoon down the side
 box((6.8, 4.4, 11.4), (9.2, 5.0, 12.6), "red")                      # its foot
-box((10.0, 17.0, 7.7), (10.9, 17.6, 8.3), "steel")                  # pin
-RX = 10.9
-for frm, to in (((RX, 18.2, 7.6), (RX + 0.4, 18.6, 9.6)), ((RX, 15.0, 7.6), (RX + 0.4, 15.4, 9.6)),
-                ((RX, 15.8, 6.8), (RX + 0.4, 17.8, 7.2)), ((RX, 15.8, 10.0), (RX + 0.4, 17.8, 10.4))):
-    box(frm, to, "steel")                                           # pull ring
-for yc, zc in ((18.0, 7.2), (18.0, 10.0), (15.6, 7.2), (15.6, 10.0)):   # rounded corners of the ring
-    box((RX, yc - 0.2, zc - 0.5), (RX + 0.4, yc + 0.2, zc + 0.5), "steel", rot=("x", 45, (RX + 0.2, yc, zc)))
+# the pin runs out through the side of the fuse head, and a closed ring hangs from its end
+box((9.9, 17.75, 7.75), (11.2, 18.25, 8.25), "steel")               # pin
+RX0, RX1 = 10.9, 11.3
+box((RX0, 17.8, 7.5), (RX1, 18.2, 8.5), "steel")                    # ring: top, where the pin goes through
+box((RX0, 15.7, 7.5), (RX1, 16.1, 8.5), "steel")                    # bottom
+box((RX0, 16.5, 6.5), (RX1, 17.4, 6.9), "steel")                    # front
+box((RX0, 16.5, 9.1), (RX1, 17.4, 9.5), "steel")                    # back
+for yc, zc, ang in ((17.7, 8.9, 45), (17.7, 7.1, -45), (16.2, 8.9, -45), (16.2, 7.1, 45)):   # corners that join them up
+    box((RX0 + 0.01, yc - 0.2, zc - 0.55), (RX1 - 0.01, yc + 0.2, zc + 0.55), "steel", rot=("x", ang, (8.0 + 3.1, yc, zc)))
 GRENADE = elements
 
 # ---------------- maths for preview + auto-centring ----------------
