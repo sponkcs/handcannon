@@ -127,7 +127,7 @@ final class GooGrenade implements Listener {
             pd.shown.add(centre.getWorld().spawn(centre.clone().add(0, deg == 0 ? 0.01 : 0.02, 0), BlockDisplay.class, d -> {
                 d.setBlock(Material.HONEY_BLOCK.createBlockData());
                 d.setTransformation(new Transformation(new Vector3f(-middle.x, 0, -middle.z), q,
-                        new Vector3f(side, 0.06f, side), new AxisAngle4f()));
+                        new Vector3f(side, 0.06f, side), new org.joml.Quaternionf()));
                 d.setPersistent(false);   // never saved: a restart can't leave a stray puddle behind
             }));
         }
