@@ -46,6 +46,11 @@ grenade:                    # the Stun Grenade: thrown, then pops with a bang, a
   fuse-ticks: 30            # time from throw to pop (20 ticks = 1 s)
   flash-ticks: 4            # how long the flash lights up the area
   cooldown-ticks: 10        # time between throws
+goo-grenade:                # the Goo Grenade: a thrown flask that leaves a slowing puddle of goo (no damage)
+  radius: 3.0               # blocks from where it smashes
+  duration-ticks: 160       # how long the puddle lasts (20 ticks = 1 s; 160 = 8 s)
+  slow: 0.75                # how much walking speed is cut while standing in it (0.75 = down to a quarter)
+  jump-cut: 0.6             # how much jumping is cut while standing in it
 bat:                        # the Nail Bat (damage and speed are set on each bat when it is given)
   damage: 10.0              # left-click hit at full strength: 10 = five hearts (stamped on each bat when given)
   attack-speed: 0.9         # left-click swings per second (a sword is 1.6, an axe about 1.0)

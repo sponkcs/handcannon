@@ -3,8 +3,8 @@
 A comically oversized snubnose revolver (right-click to fire), a cartoon M1-style Tommy gun with a huge drum magazine
 (hold right-click for full auto), a chunky sawed-off side-by-side shotgun (right-click for a blast of pellets),
 the Pala-Pistol (a slow bolt of light that stuns), the Goo Cannon (a glob of honey that traps), the Corruption Cannon (a piercing beam of darkness),
-the Holy Blade (a sword with an ankh hilt and animated, glowing edges), a stun grenade and a nail-studded
-baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
+the Holy Blade (a sword with an ankh hilt and animated, glowing edges), a stun grenade, a goo grenade and a
+nail-studded baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
 
 ![preview](preview.png)
 
@@ -26,7 +26,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade, Stun Grenade or Nail Bat (op)
+    /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|googrenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -71,6 +71,12 @@ kept out of its tooltip. `/hc give ankh` still works.
 Right-click throws it (one from the stack; they stack to 16). It tumbles and rolls, and after 1.5 seconds pops with a
 bang, a small puff of smoke and a brief flash that lights the area for a moment. For now it does nothing else: no
 damage and no stun. Settings are under `grenade:`.
+
+## Goo Grenade
+A corked glass flask of goo, thrown like a snowball (one from the stack; they stack to 16). It smashes where it lands
+and leaves a honey puddle about 3 blocks across in every direction for 8 seconds. Anything standing in it walks at a
+quarter of its usual speed and can barely jump until it wades out; it does no damage. Settings are under
+`goo-grenade:`.
 
 ## Nail Bat
 Left-click is a normal hit: 10 damage (five hearts) at full strength, a bit under one swing a second.

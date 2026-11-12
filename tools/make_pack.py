@@ -828,6 +828,31 @@ for yc, zc, ang in ((17.7, 8.9, 45), (17.7, 7.1, -45), (16.2, 8.9, -45), (16.2, 
     box((RX0 + 0.01, yc - 0.2, zc - 0.55), (RX1 - 0.01, yc + 0.2, zc + 0.55), "steel", rot=("x", ang, (8.0 + 3.1, yc, zc)))
 GRENADE = elements
 
+# ---------------- geometry: goo grenade (a thrown flask) ----------------
+# A squat glass flask about three-quarters full of goo (Minecraft's own honey texture, as in the Goo Cannon), a glass
+# shoulder and neck, a cork, and a string tied round the neck. Stands upright, centred on x = z = 8.
+def tex_cork():
+    im = tex_metal((168, 120, 70), 0, edge=False); px = im.load()
+    for x, y in ((3, 4), (10, 2), (6, 9), (12, 11), (2, 13), (8, 6)): px[x, y] = (120, 80, 44, 255)
+    return im
+GOO_GRENADE_TEX = {"glass": tex_glass(), "cork": tex_cork(), "string": tex_metal((220, 210, 180), 0, edge=False)}
+for k, im in GOO_GRENADE_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_grenade", k + ".png"))
+GOO_GRENADE_PREVIEW_TEX = dict(GOO_GRENADE_TEX, fluid=tex_honey_standin())
+
+elements = []
+# goo inside the bulb (two crossed slabs, the second a hair taller so their tops never coincide)
+box((4.6, 0.4, 5.6), (11.4, 5.4, 10.4), "fluid")
+box((5.6, 0.44, 4.6), (10.4, 5.44, 11.4), "fluid")
+box((4.2, 0.0, 4.2), (11.8, 7.0, 11.8), "glass")                     # the bulb
+box((5.4, 7.0, 5.4), (10.6, 8.2, 10.6), "glass")                     # shoulder
+box((6.7, 8.2, 6.7), (9.3, 11.2, 9.3), "glass")                      # neck
+box((6.3, 10.6, 6.3), (9.7, 11.0, 9.7), "glass")                     # lip
+box((6.9, 11.0, 6.9), (9.1, 13.2, 9.1), "cork")
+box((6.5, 12.4, 6.5), (9.5, 13.4, 9.5), "cork")                      # cork top
+box((6.6, 9.0, 6.6), (9.4, 9.6, 9.4), "string")                      # string tied round the neck
+box((9.4, 7.6, 7.7), (9.8, 9.6, 8.3), "string")                      # its loose end
+GOO_GRENADE = elements
+
 # ---------------- maths for preview + auto-centring ----------------
 def rot_axis(v, axis, deg, origin):
     a = math.radians(deg); c, s = math.cos(a), math.sin(a)
@@ -940,6 +965,16 @@ GRENADE_DISPLAY = {
     "firstperson_righthand": centred(GRENADE, (0, -90, 0), 0.55, (2, 2, 0)),
     "firstperson_lefthand":  centred(GRENADE, (0, 90, 0), 0.55, (2, 2, 0)),
 }
+GOO_GRENADE_DISPLAY = {
+    "gui":                   centred(GOO_GRENADE, (15, -30, 0), 0.9),
+    "ground":                centred(GOO_GRENADE, (0, 0, 0), 0.55),
+    "fixed":                 centred(GOO_GRENADE, (0, 0, 0), 0.9),
+    "head":                  centred(GOO_GRENADE, (0, 0, 0), 0.7, (0, 8, 0)),
+    "thirdperson_righthand": centred(GOO_GRENADE, (0, -90, 10), 0.55, (0, 2.5, 1.0)),
+    "thirdperson_lefthand":  centred(GOO_GRENADE, (0, 90, -10), 0.55, (0, 2.5, 1.0)),
+    "firstperson_righthand": centred(GOO_GRENADE, (0, -90, 0), 0.6, (2, 2, 0)),
+    "firstperson_lefthand":  centred(GOO_GRENADE, (0, 90, 0), 0.6, (2, 2, 0)),
+}
 # The bat is held like a sword: these are vanilla's handheld transforms, turned 45 degrees further because the
 # bat model stands upright where a sword sprite runs corner to corner.
 BAT_DISPLAY = {
@@ -970,6 +1005,7 @@ write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
 write_item("umbral_lance", UMBRAL, UMB_TEX, UMBRAL_DISPLAY, "black")
 write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
 write_item("stun_grenade", GRENADE, GRENADE_TEX, GRENADE_DISPLAY, "red")
+write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass", GOO_TEX_PATHS)
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
@@ -1036,6 +1072,7 @@ rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 
         [render(UMBRAL, UMB_TEX, -90, 0), render(UMBRAL, UMB_TEX, -130, 18), render(UMBRAL, UMB_TEX, 180, 8), render(UMBRAL, UMB_TEX, -60, -15)],
         [render(SWORD, SWORD_TEX, 0, 0, -90), render(SWORD, SWORD_TEX, 30, 20, -90), render(SWORD, SWORD_TEX, 0, 0, 0), render(SWORD, SWORD_TEX, 0, 0, -45)],
         [render(GRENADE, GRENADE_TEX, 0, 0, 0), render(GRENADE, GRENADE_TEX, 35, 15, 0), render(GRENADE, GRENADE_TEX, -90, 0, 0), render(GRENADE, GRENADE_TEX, 120, 15, 0)],
+        [render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 0, 0, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 35, 20, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, -90, 0, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 120, 20, 0)],
         [render(BAT, BAT_TEX, 0, 0, -90), render(BAT, BAT_TEX, 30, 20, -90), render(BAT, BAT_TEX, 0, 90), render(BAT, BAT_TEX, 0, 0, -45)]]
 pv = Image.new("RGBA", (420 * 4, 420 * len(rows)))
 for r, row in enumerate(rows):
