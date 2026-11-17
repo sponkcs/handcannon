@@ -829,20 +829,47 @@ for yc, zc, ang in ((17.7, 8.9, 45), (17.7, 7.1, -45), (16.2, 8.9, -45), (16.2, 
 GRENADE = elements
 
 # ---------------- geometry: goo grenade (a thrown flask) ----------------
-# A squat glass flask about three-quarters full of goo (Minecraft's own honey texture, as in the Goo Cannon), a glass
-# shoulder and neck, a cork, and a string tied round the neck. Stands upright, centred on x = z = 8.
+# A squat glass flask about three-quarters full of liquid honey (its own textures: amber deepening towards the bottom,
+# a glossy streak, bubbles, a bright surface), a glass shoulder and neck, a cork, a string tied round the neck, and a
+# drip of honey running down the outside from the lip. Stands upright, centred on x = z = 8.
 def tex_cork():
     im = tex_metal((168, 120, 70), 0, edge=False); px = im.load()
     for x, y in ((3, 4), (10, 2), (6, 9), (12, 11), (2, 13), (8, 6)): px[x, y] = (120, 80, 44, 255)
     return im
-GOO_GRENADE_TEX = {"glass": tex_glass(), "cork": tex_cork(), "string": tex_metal((220, 210, 180), 0, edge=False)}
+def tex_honey_side():
+    """Liquid honey seen through the glass: golden near the top deepening to amber, a glossy streak and a few bubbles."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        t = y / 15
+        base = (int(238 - 62 * t), int(150 - 66 * t), int(22 - 14 * t))
+        for x in range(16):
+            c = base
+            if x in (3, 4): c = tuple(min(255, v + 34) for v in base)          # glossy streak
+            elif x == 5: c = tuple(min(255, v + 14) for v in base)
+            elif x in (14, 15): c = tuple(int(v * 0.86) for v in base)         # darker towards the edge
+            px[x, y] = c + (255,)
+    for x, y in ((9, 5), (11, 9), (7, 12), (12, 13)):                          # bubbles caught in it
+        px[x, y] = (255, 214, 120, 255)
+    return im
+def tex_honey_top():
+    """The surface of the honey: bright gold with a soft sheen."""
+    im = Image.new("RGBA", (16, 16)); px = im.load()
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - 5.5, y - 5.5)
+            v = max(0.0, 1 - d / 9)
+            px[x, y] = (clamp(240 + 15 * v), clamp(162 + 60 * v), clamp(30 + 90 * v), 255)
+    return im
+GOO_GRENADE_TEX = {"glass": tex_glass(), "cork": tex_cork(), "string": tex_metal((220, 210, 180), 0, edge=False),
+                   "honey": tex_honey_side(), "honey_top": tex_honey_top()}
 for k, im in GOO_GRENADE_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_grenade", k + ".png"))
-GOO_GRENADE_PREVIEW_TEX = dict(GOO_GRENADE_TEX, fluid=tex_honey_standin())
+GOO_GRENADE_PREVIEW_TEX = GOO_GRENADE_TEX
 
 elements = []
 # goo inside the bulb (two crossed slabs, the second a hair taller so their tops never coincide)
-box((4.6, 0.4, 5.6), (11.4, 5.4, 10.4), "fluid")
-box((5.6, 0.44, 4.6), (10.4, 5.44, 11.4), "fluid")
+HONEY = {"up": "honey_top"}
+box((4.6, 0.4, 5.6), (11.4, 5.4, 10.4), "honey", HONEY)
+box((5.6, 0.44, 4.6), (10.4, 5.44, 11.4), "honey", HONEY)
 box((4.2, 0.0, 4.2), (11.8, 7.0, 11.8), "glass")                     # the bulb
 box((5.4, 7.0, 5.4), (10.6, 8.2, 10.6), "glass")                     # shoulder
 box((6.7, 8.2, 6.7), (9.3, 11.2, 9.3), "glass")                      # neck
@@ -851,6 +878,15 @@ box((6.9, 11.0, 6.9), (9.1, 13.2, 9.1), "cork")
 box((6.5, 12.4, 6.5), (9.5, 13.4, 9.5), "cork")                      # cork top
 box((6.6, 9.0, 6.6), (9.4, 9.6, 9.4), "string")                      # string tied round the neck
 box((9.4, 7.6, 7.7), (9.8, 9.6, 8.3), "string")                      # its loose end
+# a drip of honey running down the outside, in one unbroken run: over the lip, down the neck, across the shoulder,
+# over the top edge of the bulb and down its side to a bead
+box((7.4, 10.0, 9.3), (8.4, 11.1, 9.75), "honey", HONEY)             # over the lip
+box((7.5, 8.22, 9.32), (8.3, 10.0, 9.6), "honey")                    # down the neck
+box((7.45, 8.2, 9.3), (8.35, 8.5, 10.9), "honey", HONEY)             # across the shoulder
+box((7.5, 7.02, 10.62), (8.3, 8.25, 10.88), "honey")                 # down the shoulder's side
+box((7.45, 7.0, 10.6), (8.35, 7.3, 12.1), "honey", HONEY)            # over the top edge of the bulb
+box((7.5, 4.6, 11.8), (8.3, 7.0, 12.1), "honey")                     # down the bulb
+box((7.4, 4.0, 11.8), (8.4, 4.6, 12.25), "honey")                    # the bead at the bottom of the drip
 GOO_GRENADE = elements
 
 # ---------------- maths for preview + auto-centring ----------------
@@ -1005,7 +1041,7 @@ write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
 write_item("umbral_lance", UMBRAL, UMB_TEX, UMBRAL_DISPLAY, "black")
 write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
 write_item("stun_grenade", GRENADE, GRENADE_TEX, GRENADE_DISPLAY, "red")
-write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass", GOO_TEX_PATHS)
+write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
