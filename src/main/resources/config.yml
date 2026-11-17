@@ -41,11 +41,11 @@ umbral:                     # the Corruption Cannon: an instant crimson beam tha
 holy:                       # the Holy Blade sword (stamped on each sword when it is given; hidden from its tooltip)
   damage: 100.0             # per full-strength hit (100 = fifty hearts)
   attack-speed: 1.6         # swings per second, same as a vanilla sword
-grenade:                    # the Stun Grenade (roleplay): thrown, then pops with a bang, a puff of smoke and a soft glow; never affects anyone
-  throw-speed: 0.9          # how hard it's thrown
-  fuse-ticks: 30            # time from throw to pop (20 ticks = 1 s)
-  flash-ticks: 8            # how long the soft glow takes to fade (20 ticks = 1 s)
-  cooldown-ticks: 10        # time between throws
+grenade:                    # the Stun Grenade (roleplay): left-click pulls the pin, right-click lobs it; never affects anyone
+  pin-fuse-ticks: 60        # fuse from pulling the pin to the pop (20 ticks = 1 s; 60 = 3 s)
+  lob-forward: 0.6          # how far forward the easy underarm lob goes
+  lob-up: 0.35              # how high it goes
+  flash-ticks: 8            # how long the soft glow takes to fade
 goo-grenade:                # the Goo Grenade: a thrown flask that leaves a slowing puddle of goo (no damage)
   radius: 3.0               # blocks from where it smashes
   duration-ticks: 160       # how long the puddle lasts (20 ticks = 1 s; 160 = 8 s)

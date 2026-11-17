@@ -68,10 +68,11 @@ flares with light. Damage and speed are stamped on each sword when it is given (
 kept out of its tooltip. `/hc give ankh` still works.
 
 ## Stun Grenade
-A roleplay item. Right-click throws it (one from the stack; they stack to 16). It tumbles and rolls, and after 1.5
-seconds pops with a moderate bang, a small puff of smoke, a soft warm sparkle and a gentle glow that lights the area
-and fades within half a second. It never affects anyone: no damage, blindness, nausea or screen flash. Settings are
-under `grenade:`.
+A roleplay item. Left-click pulls the pin and starts a 3-second fuse (a countdown shows on the action bar);
+right-click throws it in an easy underarm lob straight ahead, no aiming. It tumbles and rolls, and when the fuse runs
+out it pops with a moderate bang, a small puff of smoke, a soft warm sparkle and a gentle glow that fades within half
+a second; held too long, it pops in the hand just the same. It never affects anyone: no damage, blindness, nausea or
+screen flash. They stack to 16; each pin pulled and popped uses one. Settings are under `grenade:`.
 
 ## Goo Grenade
 A corked glass flask of goo, thrown like a snowball (one from the stack; they stack to 16). It smashes where it lands
