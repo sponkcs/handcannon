@@ -68,9 +68,10 @@ flares with light. Damage and speed are stamped on each sword when it is given (
 kept out of its tooltip. `/hc give ankh` still works.
 
 ## Stun Grenade
-Right-click throws it (one from the stack; they stack to 16). It tumbles and rolls, and after 1.5 seconds pops with a
-bang, a small puff of smoke and a brief flash that lights the area for a moment. For now it does nothing else: no
-damage and no stun. Settings are under `grenade:`.
+A roleplay item. Right-click throws it (one from the stack; they stack to 16). It tumbles and rolls, and after 1.5
+seconds pops with a moderate bang, a small puff of smoke, a soft warm sparkle and a gentle glow that lights the area
+and fades within half a second. It never affects anyone: no damage, blindness, nausea or screen flash. Settings are
+under `grenade:`.
 
 ## Goo Grenade
 A corked glass flask of goo, thrown like a snowball (one from the stack; they stack to 16). It smashes where it lands

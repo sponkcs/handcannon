@@ -32,8 +32,8 @@ import org.bukkit.util.Vector;
 import java.util.List;
 
 /**
- * The Stun Grenade: right-click throws it. It tumbles and rolls, and after a short fuse it pops with a bang, a small
- * puff of smoke and a brief flash of light. For now that's all it does.
+ * The Stun Grenade: a roleplay item. Right-click throws it; it tumbles and rolls, and after a short fuse it pops with
+ * a bang, a small puff of smoke and a soft, brief glow. It never affects anyone: no blindness, nausea or screen flash.
  */
 final class StunGrenade implements Listener {
     private final HandCannonPlugin plugin;
@@ -103,26 +103,36 @@ final class StunGrenade implements Listener {
         }, fuse);
     }
 
+    /**
+     * The pop. Purely cosmetic and kept gentle on purpose (it's a roleplay item): no blindness, nausea or other effect
+     * on anyone, no full-screen flash, and a moderate bang. A soft warm sparkle stands in for the flash, and the area
+     * glows briefly, dimming back to normal over a few ticks.
+     */
     private void pop(Location at) {
         World w = at.getWorld();
-        w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 2.0f, 1.3f);
-        w.playSound(at, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.7f, 1.8f);
+        w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 1.0f, 1.3f);
+        w.playSound(at, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.3f, 1.8f);
         w.spawnParticle(Particle.CLOUD, at, 10, 0.25, 0.2, 0.25, 0.03);
         w.spawnParticle(Particle.SMOKE, at, 20, 0.3, 0.2, 0.3, 0.02);
-        // the flash: the particle (its data type differs between versions, so ask it what it wants)
-        if (Particle.FLASH.getDataType() == Color.class) w.spawnParticle(Particle.FLASH, at, 1, 0, 0, 0, 0, Color.WHITE);
-        else if (Particle.FLASH.getDataType() == Void.class) w.spawnParticle(Particle.FLASH, at, 1, 0, 0, 0, 0);
-        w.spawnParticle(Particle.END_ROD, at, 12, 0.1, 0.1, 0.1, 0.15);
-        // ...and a moment of real light: an invisible light block in the air where it popped, removed again after a few ticks
+        w.spawnParticle(Particle.DUST, at, 18, 0.35, 0.3, 0.35, 0, new Particle.DustOptions(Color.fromRGB(255, 236, 170), 1.0f));
+        w.spawnParticle(Particle.END_ROD, at, 8, 0.1, 0.1, 0.1, 0.08);
+        // a moment of soft light: an invisible light block where it popped, dimming step by step and then removed
         Block b = at.getBlock();
-        if (b.getType() == Material.AIR || b.getType() == Material.CAVE_AIR) {
-            Light light = (Light) Material.LIGHT.createBlockData();
-            light.setLevel(15);
-            b.setBlockData(light, false);
+        if (b.getType() != Material.AIR && b.getType() != Material.CAVE_AIR) return;
+        int ticks = Math.max(1, plugin.getConfig().getInt("grenade.flash-ticks", 8));
+        int[] levels = {12, 9, 6, 3};
+        for (int i = 0; i < levels.length; i++) {
+            int level = levels[i];
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                if (b.getType() == Material.LIGHT) b.setType(Material.AIR, false);
-            }, Math.max(1, plugin.getConfig().getInt("grenade.flash-ticks", 4)));
+                if (b.getType() != Material.AIR && b.getType() != Material.CAVE_AIR && b.getType() != Material.LIGHT) return;
+                Light light = (Light) Material.LIGHT.createBlockData();
+                light.setLevel(level);
+                b.setBlockData(light, false);
+            }, (long) i * ticks / levels.length);
         }
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (b.getType() == Material.LIGHT) b.setType(Material.AIR, false);
+        }, ticks + 1);
     }
 
     /** Hoppers can't swallow a live grenade. */
