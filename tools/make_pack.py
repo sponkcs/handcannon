@@ -788,6 +788,14 @@ def middle(els):
 def display_rotate(v, rot):   # Minecraft applies display rotations as R = Rx * Ry * Rz (z first)
     for ax, d in zip("zyx", rot[::-1]): v = rot_axis(v, ax, d, (0, 0, 0))
     return v
+def held_by(els, rot, scale, grip, nudge=(0, 0, 0)):
+    """Third-person entry that puts the model's grip (a point in model units) in the hand.
+    In third person the hand's frame is: x = back, y = outward, z = up (seen in game: at rotation 0 a gun's barrel,
+    model -z, points down the arm). Left-hand rotations are written mirrored (Minecraft flips y and z back)."""
+    eff = (rot[0], abs(rot[1]), rot[2]) if rot[1] < 0 else rot
+    off = display_rotate(tuple(grip[i] - 8 for i in range(3)), eff)
+    return {"rotation": list(rot), "translation": [round(-scale * off[i] + nudge[i], 3) for i in range(3)],
+            "scale": [scale] * 3}
 def centred(els, rot, scale, nudge=(0, 0, 0)):
     """Display entry that puts the model's middle on the slot's middle, then nudges it (model units)."""
     c = middle(els)
@@ -834,8 +842,8 @@ PALA_DISPLAY = {
     "head":                  centred(PALA, (0, 0, 0), 0.5, (0, 8, 0)),
     "firstperson_righthand": centred(PALA, (0, 0, 0), 0.55, (4, -1, -5)),
     "firstperson_lefthand":  centred(PALA, (0, 0, 0), 0.55, (4, -1, -5)),
-    "thirdperson_righthand": centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
-    "thirdperson_lefthand":  centred(PALA, (0, 0, 0), 0.55, (0, 3, -2)),
+    "thirdperson_righthand": held_by(PALA, (90, 90, 0), 0.4, (8, 5.5, 8.8)),
+    "thirdperson_lefthand":  held_by(PALA, (90, -90, 0), 0.4, (8, 5.5, 8.8)),
 }
 GOO_DISPLAY = {
     "gui":                   centred(GOO, (0, 90, 0), 0.46),
