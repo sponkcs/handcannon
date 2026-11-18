@@ -106,6 +106,7 @@ final class GooCannon implements Listener {
     // ---------------------------------------------------------------- the glob
 
     private void fire(Player p, ItemStack gun) {
+        gun = plugin.heldGun(p, gun, "handcannon:goo_cannon", this::is);
         if (!p.hasPermission("handcannon.use") || p.hasCooldown(gun)) return;
         var cfg = plugin.getConfig();
         p.setCooldown(gun, Math.max(1, cfg.getInt("goo.cooldown-ticks", 20)));

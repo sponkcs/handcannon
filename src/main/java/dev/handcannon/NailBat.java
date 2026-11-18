@@ -8,6 +8,7 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -142,8 +143,9 @@ final class NailBat implements Listener {
 
         var cfg = plugin.getConfig();
         var eye = p.getEyeLocation();
-        RayTraceResult hit = w.rayTraceEntities(eye, eye.getDirection(), cfg.getDouble("bat.home-run-reach", 3.5), 0.6,
-                ent -> canHit(p, ent));
+        // blocks count too, so a home run can't reach anyone through a wall
+        RayTraceResult hit = w.rayTrace(eye, eye.getDirection(), cfg.getDouble("bat.home-run-reach", 3.5),
+                FluidCollisionMode.NEVER, true, 0.6, ent -> canHit(p, ent));
         if (hit == null || !(hit.getHitEntity() instanceof LivingEntity target)) return;   // swung and missed
 
         swingingHomeRun.add(p.getUniqueId());

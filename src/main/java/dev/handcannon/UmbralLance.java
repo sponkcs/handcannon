@@ -75,6 +75,7 @@ final class UmbralLance implements Listener {
     }
 
     private void fire(Player p, ItemStack gun) {
+        gun = plugin.heldGun(p, gun, "handcannon:umbral_lance", this::is);
         if (!p.hasPermission("handcannon.use") || p.hasCooldown(gun)) return;
         var cfg = plugin.getConfig();
         p.setCooldown(gun, Math.max(1, cfg.getInt("umbral.cooldown-ticks", 24)));

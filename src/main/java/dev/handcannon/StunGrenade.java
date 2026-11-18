@@ -26,6 +26,7 @@ import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -165,7 +166,8 @@ final class StunGrenade implements Listener {
         ItemStack shown = held.clone();
         shown.setAmount(1);
         ItemMeta sm = shown.getItemMeta();
-        sm.getPersistentDataContainer().set(liveKey, PersistentDataType.BYTE, (byte) 1);
+        // a different tag on every throw, so two grenades landing together never merge into one item (and one pop)
+        sm.getPersistentDataContainer().set(liveKey, PersistentDataType.STRING, UUID.randomUUID().toString());
         shown.setItemMeta(sm);
         World w = p.getWorld();
         Item thrown = w.dropItem(handSpot(p), shown, it -> {
@@ -192,9 +194,27 @@ final class StunGrenade implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {   // leaving with the pin out: the grenade just goes quiet
-        Live live = pinned.remove(e.getPlayer().getUniqueId());
-        if (live != null) { live.countdown.cancel(); live.inHand.cancel(); }
+        defuse(e.getPlayer());
         lastRightClick.remove(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent e) { defuse(e.getPlayer()); }   // dying with the pin out: same
+
+    private void defuse(Player p) {
+        Live live = pinned.remove(p.getUniqueId());
+        if (live != null) { live.countdown.cancel(); live.inHand.cancel(); }
+    }
+
+    /** Light blocks still showing a glow, so a shutdown mid-glow can't leave one behind. */
+    private final java.util.Set<Block> glowing = new java.util.HashSet<>();
+
+    /** Called when the plugin shuts down. */
+    void cleanUp() {
+        for (Block b : glowing) if (b.getType() == Material.LIGHT) b.setType(Material.AIR, false);
+        glowing.clear();
+        for (Live live : pinned.values()) { live.countdown.cancel(); live.inHand.cancel(); }
+        pinned.clear();
     }
 
     /**
@@ -222,10 +242,12 @@ final class StunGrenade implements Listener {
                 Light light = (Light) Material.LIGHT.createBlockData();
                 light.setLevel(level);
                 b.setBlockData(light, false);
+                glowing.add(b);
             }, (long) i * ticks / levels.length);
         }
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (b.getType() == Material.LIGHT) b.setType(Material.AIR, false);
+            glowing.remove(b);
         }, ticks + 1);
     }
 
@@ -233,7 +255,7 @@ final class StunGrenade implements Listener {
     @EventHandler
     public void onHopper(InventoryPickupItemEvent e) {
         ItemStack it = e.getItem().getItemStack();
-        if (it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(liveKey, PersistentDataType.BYTE)) e.setCancelled(true);
+        if (it.hasItemMeta() && it.getItemMeta().getPersistentDataContainer().has(liveKey)) e.setCancelled(true);
     }
 
     /** It's a snowball underneath: keep it out of crafting grids (it would make snow blocks). */

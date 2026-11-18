@@ -91,6 +91,7 @@ final class PalaPistol implements Listener {
     // ---------------------------------------------------------------- the bolt
 
     private void fire(Player p, ItemStack gun) {
+        gun = plugin.heldGun(p, gun, "handcannon:pala_pistol", this::is);
         if (!p.hasPermission("handcannon.use") || p.hasCooldown(gun)) return;
         var cfg = plugin.getConfig();
         p.setCooldown(gun, Math.max(1, cfg.getInt("pala.cooldown-ticks", 12)));

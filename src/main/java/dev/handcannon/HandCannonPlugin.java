@@ -1,5 +1,8 @@
 package dev.handcannon;
 
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.UseCooldown;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
@@ -16,6 +19,8 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.Crafter;
+import org.bukkit.event.block.CrafterCraftEvent;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -93,6 +98,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (pala != null) pala.releaseAll();   // nobody stays stunned or stuck across a restart
         if (goo != null) goo.releaseAll();
         if (gooGrenade != null) gooGrenade.clearAll();
+        if (grenade != null) grenade.cleanUp();
     }
 
     // ---------------------------------------------------------------- items
@@ -105,7 +111,24 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         m.setItemModel(NamespacedKey.fromString(model));
         m.getPersistentDataContainer().set(key, PersistentDataType.BYTE, (byte) 1);
         it.setItemMeta(m);
+        giveOwnCooldown(it, model);
         return it;
+    }
+
+    /**
+     * Every gun is a carrot on a stick underneath, and Minecraft shares a cooldown between items of the same type, so
+     * firing one would lock all the others. Giving each gun its own cooldown group keeps them apart.
+     */
+    static void giveOwnCooldown(ItemStack it, String group) {
+        if (it == null || it.hasData(DataComponentTypes.USE_COOLDOWN)) return;
+        it.setData(DataComponentTypes.USE_COOLDOWN, UseCooldown.useCooldown(0.05f).cooldownGroup(Key.key(group)).build());
+    }
+
+    /** The gun actually in this player's hands (not a copy), brought up to date with its own cooldown group. */
+    ItemStack heldGun(Player p, ItemStack fromEvent, String group, java.util.function.Predicate<ItemStack> isThisGun) {
+        for (ItemStack it : new ItemStack[]{p.getInventory().getItemInMainHand(), p.getInventory().getItemInOffHand()})
+            if (isThisGun.test(it)) { giveOwnCooldown(it, group); return it; }
+        return fromEvent;
     }
     ItemStack createGun() { return makeGun(gunKey, "Hand Cannon", "Right-click to fire", "handcannon:hand_cannon"); }
     ItemStack createTommy() { return makeGun(tommyKey, "Tommy Gun", "Hold right-click to fire", "handcannon:tommy_gun"); }
@@ -145,6 +168,23 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
     @EventHandler
     public void onJoin(PlayerJoinEvent e) { sendPack(e.getPlayer()); }
 
+    /**
+     * The automatic Crafter block skips the crafting-grid checks, so it could turn a bat or the Holy Blade (sticks
+     * underneath) or a grenade (a snowball) into ordinary recipes. It won't craft with any HandCannon item.
+     */
+    @EventHandler
+    public void onCrafter(CrafterCraftEvent e) {
+        if (!(e.getBlock().getState(false) instanceof Crafter crafter)) return;
+        for (ItemStack it : crafter.getInventory().getContents()) if (isOurs(it)) { e.setCancelled(true); return; }
+    }
+
+    /** Any item this plugin made (they all carry a tag under this plugin's name). */
+    boolean isOurs(ItemStack it) {
+        if (it == null || !it.hasItemMeta()) return false;
+        String ns = getName().toLowerCase(java.util.Locale.ROOT);
+        return it.getItemMeta().getPersistentDataContainer().getKeys().stream().anyMatch(k -> k.getNamespace().equals(ns));
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent e) { lastTommyShot.remove(e.getPlayer().getUniqueId()); }
 
@@ -152,8 +192,9 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (!p.hasPermission("handcannon.use")) return;
         var cfg = getConfig();
         if (isGun(gun) || isShotgun(gun)) {   // one shot per click, then a cooldown (shown as the sweep on the item)
-            if (p.hasCooldown(gun)) return;
             boolean shotgun = isShotgun(gun);
+            gun = heldGun(p, gun, shotgun ? "handcannon:shotgun" : "handcannon:hand_cannon", shotgun ? this::isShotgun : this::isGun);
+            if (p.hasCooldown(gun)) return;
             p.setCooldown(gun, Math.max(1, shotgun ? cfg.getInt("shotgun.cooldown-ticks", 20) : cfg.getInt("cooldown-ticks", 14)));
             shoot(p, shotgun ? Stats.shotgun(cfg) : Stats.cannon(cfg));
             return;
