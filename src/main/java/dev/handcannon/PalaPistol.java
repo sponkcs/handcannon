@@ -39,8 +39,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * The Pala-Pistol: right-click fires a slow, glowing bolt of yellow light. Whatever it hits takes damage and is
- * stunned for a few seconds: it can't move, jump or attack.
+ * The Pala-Pistol: right-click fires a slow, glowing bolt of yellow light. It does no damage: whatever it hits is
+ * stunned for a few seconds (can't move, jump or attack), with little arcs of lightning crackling over it.
  */
 final class PalaPistol implements Listener {
     private static final Particle.DustOptions LIGHT = new Particle.DustOptions(Color.fromRGB(255, 232, 70), 1.6f);
@@ -97,7 +97,6 @@ final class PalaPistol implements Listener {
         p.setCooldown(gun, Math.max(1, cfg.getInt("pala.cooldown-ticks", 12)));
         double speed = Math.max(0.1, cfg.getDouble("pala.speed", 0.8));      // blocks per tick
         double range = cfg.getDouble("pala.range", 48);
-        double damage = cfg.getDouble("pala.damage", 10);
         int stunTicks = Math.max(1, cfg.getInt("pala.stun-ticks", 60));
 
         World w = p.getWorld();
@@ -122,10 +121,10 @@ final class PalaPistol implements Listener {
                 if (hit != null) {
                     Location at = hit.getHitPosition().toLocation(w);
                     if (hit.getHitEntity() instanceof LivingEntity target) {
-                        target.setNoDamageTicks(0);
-                        target.damage(damage, p);
+                        // no damage at all: the bolt only stuns, with a quick zap
                         stun(target, stunTicks);
-                        w.playSound(at, Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 1f, 1.8f);
+                        w.playSound(at, Sound.ENTITY_LIGHTNING_BOLT_IMPACT, SoundCategory.PLAYERS, 0.35f, 2.0f);
+                        w.playSound(at, Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.PLAYERS, 0.8f, 1.8f);
                     } else {
                         w.playSound(at, Sound.BLOCK_AMETHYST_BLOCK_BREAK, SoundCategory.PLAYERS, 0.8f, 1.6f);
                     }
@@ -188,13 +187,36 @@ final class PalaPistol implements Listener {
                     cancel();
                     return;
                 }
-                if (t++ % 3 == 0) {   // yellow sparks dancing round the head
-                    Location head = target.getLocation().add(0, target.getHeight() + 0.2, 0);
-                    target.getWorld().spawnParticle(Particle.DUST, head, 3, 0.3, 0.1, 0.3, 0, LIGHT_SMALL);
-                    target.getWorld().spawnParticle(Particle.ELECTRIC_SPARK, head, 2, 0.3, 0.1, 0.3, 0.02);
-                }
+                // zapped: little arcs of lightning crackle over the body for as long as the stun lasts
+                if (t % 3 == 0) crackle(target);
+                if (t % 10 == 0) target.getWorld().playSound(target.getLocation(), Sound.BLOCK_REDSTONE_TORCH_BURNOUT,
+                        SoundCategory.PLAYERS, 0.25f, 1.9f);
+                t++;
             }
         }.runTaskTimer(plugin, 1, 1);
+    }
+
+    private static final Particle.DustOptions ARC = new Particle.DustOptions(Color.fromRGB(255, 250, 205), 0.55f);
+
+    /** One or two short, jagged arcs of light somewhere on the target's body, with sparks where they jump. */
+    private static void crackle(LivingEntity target) {
+        var r = java.util.concurrent.ThreadLocalRandom.current();
+        World w = target.getWorld();
+        double half = target.getWidth() / 2 + 0.15, h = target.getHeight();
+        Location base = target.getLocation();
+        int arcs = 1 + r.nextInt(2);
+        for (int a = 0; a < arcs; a++) {
+            // start on the outside of the body, then zig-zag a few short steps
+            double ang = r.nextDouble(Math.PI * 2);
+            Vector at = new Vector(Math.cos(ang) * half, r.nextDouble(0.1, h), Math.sin(ang) * half);
+            for (int seg = 0; seg < 4; seg++) {
+                Vector step = new Vector(r.nextDouble(-0.25, 0.25), r.nextDouble(-0.3, 0.3), r.nextDouble(-0.25, 0.25));
+                for (double f = 0; f <= 1; f += 0.25)
+                    w.spawnParticle(Particle.DUST, base.clone().add(at.clone().add(step.clone().multiply(f))), 1, 0, 0, 0, 0, ARC);
+                at.add(step);
+            }
+            w.spawnParticle(Particle.ELECTRIC_SPARK, base.clone().add(at), 2, 0.05, 0.05, 0.05, 0.03);
+        }
     }
 
     private void unstun(LivingEntity target) {

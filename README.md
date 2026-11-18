@@ -44,9 +44,10 @@ Right-click fires a blast of 8 pellets with a one-second wait between shots. Any
 under `shotgun:` in `config.yml`.
 
 ## Pala-Pistol
-Right-click fires a glowing bolt of yellow light that flies slowly (you can watch it go) in a straight line. Whatever
-it hits takes 10 damage (five hearts) and is stunned for 3 seconds: it can't move, jump or attack, and yellow
-sparks dance round its head. Misses fizzle out against blocks or after 48 blocks. Settings are under `pala:`.
+Right-click fires a glowing bolt of yellow light that flies slowly (you can watch it go) in a straight line. It does
+no damage: whatever it hits is zapped and stunned for 3 seconds. It can't move, jump or attack, and little arcs of
+lightning crackle over it, with sparks and a soft crackle, until the stun wears off. Misses fizzle out against blocks
+or after 48 blocks. Settings are under `pala:`.
 
 ## Goo Cannon
 Right-click lobs a glob of honey that arcs like a thrown snowball. It does no damage: whatever it hits is encased in a
