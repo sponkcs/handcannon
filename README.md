@@ -2,8 +2,7 @@
 
 A comically oversized snubnose revolver (right-click to fire), a cartoon M1-style Tommy gun with a huge drum magazine
 (hold right-click for full auto), a chunky sawed-off side-by-side shotgun (right-click for a blast of pellets),
-the Pala-Pistol (a slow bolt of light that stuns), the Goo Cannon (a glob of honey that traps), the Corruption Cannon (a piercing beam of darkness),
-the Holy Blade (a sword with an ankh hilt and animated, glowing edges), a stun grenade, a goo grenade and a
+the Pala-Pistol (a slow bolt of light that stuns), the Goo Cannon (a glob of honey that traps), the Holy Blade (a sword with an ankh hilt and animated, glowing edges), a stun grenade, a goo grenade and a
 nail-studded baseball bat (hold right-click to wind up a home run), all with 3D models. No ammo, no reloading.
 
 ![preview](preview.png)
@@ -26,7 +25,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|googrenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Corruption Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat (op)
+    /hc give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -54,11 +53,6 @@ Right-click lobs a glob of honey that arcs like a thrown snowball. It does no da
 honey-block shell and can't move, jump or fall for 3.5 seconds. A trapped player can mash Shift to break out early
 (12 presses; a progress bar shows on the action bar). The canister's goo uses Minecraft's own honey block texture.
 Settings are under `goo:`.
-
-## Corruption Cannon
-Right-click fires an instant crimson beam that runs through every creature in a line, up to the first wall. Each
-target takes 10 damage (five hearts) and gets the Darkness effect for 5 seconds. The model's red crystal glows
-faintly in the dark. Settings are under `umbral:` (its earlier name; `/hc give umbral` still works too).
 
 ## Holy Blade
 A sword whose handle and hilt are an ankh, with a cut ruby set in the loop and the blade rising out of it. Its edges

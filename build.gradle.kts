@@ -1,6 +1,6 @@
 plugins { java }
 group = "dev.handcannon"
-version = "0.11.1"
+version = "0.12.0"
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")

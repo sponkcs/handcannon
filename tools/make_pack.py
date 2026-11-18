@@ -601,97 +601,6 @@ box((6.1, 1.4, 7.7), (9.9, 8.4, 10.3), "rubber", rot=PG)
 box((6.0, 0.4, 7.0), (10.0, 1.0, 11.0), "rubber", rot=PG)
 GOO = elements
 
-# ---------------- geometry: corruption cannon (files keep the old name, umbral_lance) ----------------
-# An ominous darkness weapon: a long tapering spike of glowing red crystal, shards bursting out of it, set in a
-# black, thorned receiver with a
-# red gem each side and a tall fin carrying a red rune, a long stock rising to a flared tail, a tall blade-like
-# front grip with a red inlay and a raked rear grip. Barrel toward north (-z) like the other guns.
-def tex_crystal():
-    im = Image.new("RGBA", (16, 16)); px = im.load()
-    for y in range(16):
-        for x in range(16):
-            k = (x + y) % 8
-            c = (236, 70, 82) if k == 0 else (214, 40, 54) if k in (1, 7) else (170, 18, 34) if k < 5 else (124, 10, 24)
-            px[x, y] = c + (255,)
-    return im
-def tex_rune():
-    """Black plate with an original red sigil: a downward triangle with an eye-ring and a spike through it."""
-    S = 64; im = Image.new("RGBA", (S, S), (26, 24, 30, 255)); d = ImageDraw.Draw(im)
-    red = (220, 34, 48, 255)
-    d.polygon([(10, 12), (54, 12), (32, 54)], outline=red, width=3)
-    d.ellipse((24, 18, 40, 34), outline=red, width=3)
-    d.ellipse((30, 24, 34, 28), fill=red)
-    d.line((32, 4, 32, 60), fill=red, width=2)
-    return im
-UMB_TEX = {"black": tex_metal((26, 24, 30)), "black_soft": tex_metal((44, 40, 50), 0, edge=False),
-           "crystal": tex_crystal(), "rune": tex_rune()}
-for k, im in UMB_TEX.items(): im.save(path("assets", NS, "textures", "item", "umbral_lance", k + ".png"))
-FULL_UV.add("rune")
-
-elements = []
-# the crystal spike: stepped round sections tapering to a point, and a black collar where it meets the receiver
-for z0, z1, dia in ((-16.0, -13.5, 0.8), (-13.5, -11.0, 1.4), (-11.0, -8.0, 2.0), (-8.0, -5.0, 2.6), (-5.0, -2.0, 3.2), (-2.0, 0.6, 3.8)):
-    round_prism(8, 11.0, dia, z0, z1, "crystal")
-round_prism(8, 11.0, 4.7, 0.3, 1.5, "black")
-# crystal shards bursting outward along the spike: a thick base and a thinner tip, raked toward the muzzle
-def spike_radius(z):
-    for z0, z1, dia in ((-16.0, -13.5, 0.8), (-13.5, -11.0, 1.4), (-11.0, -8.0, 2.0), (-8.0, -5.0, 2.6), (-5.0, -2.0, 3.2), (-2.0, 0.6, 3.8)):
-        if z0 <= z < z1: return dia / 2
-    return 1.9
-def shard(z, way, length):
-    # each shard starts a little inside the crystal so it looks embedded
-    for w_, l_, a_ in ((0.34, 0.65, 0.0), (0.17, 1.0, 0.05)):   # base then tip (tip nudged so faces never coincide)
-        r = spike_radius(z) - 0.3 + a_
-        L = length * l_; c0, c1 = z - w_ + a_, z + w_ + a_
-        if way in ("up", "ur", "ul"):
-            frm, to = (8 - w_ + a_, 11 + r, c0), (8 + w_ + a_, 11 + r + L, c1)
-        elif way in ("down", "dr", "dl"):
-            frm, to = (8 - w_ + a_, 11 - r - L, c0), (8 + w_ + a_, 11 - r, c1)
-        elif way == "left":
-            frm, to = (8 - r - L, 11 - w_ + a_, c0), (8 - r, 11 + w_ + a_, c1)
-        else:   # right
-            frm, to = (8 + r, 11 - w_ + a_, c0), (8 + r + L, 11 + w_ + a_, c1)
-        rot = {"up": ("x", -22.5, (8, 11, z)), "down": ("x", 22.5, (8, 11, z)),
-               "left": ("y", -22.5, (8, 11, z)), "right": ("y", 22.5, (8, 11, z)),
-               "ur": ("z", -45, (8, 11, z)), "ul": ("z", 45, (8, 11, z)),
-               "dr": ("z", 45, (8, 11, z)), "dl": ("z", -45, (8, 11, z))}[way]
-        box(frm, to, "crystal", rot=rot)
-for z, way, length in ((-12.2, "up", 1.6), (-10.6, "left", 2.0), (-9.6, "down", 2.2), (-8.7, "right", 2.4),
-                       (-7.4, "up", 2.8), (-6.6, "ul", 2.2), (-6.0, "ur", 2.0), (-5.5, "left", 2.8),
-                       (-4.6, "down", 2.6), (-3.7, "dr", 2.4), (-3.0, "right", 3.0), (-2.3, "dl", 2.2),
-                       (-1.4, "up", 2.4)):
-    shard(z, way, length * 1.5)
-# receiver, with thorns jutting forward and outward, and a red gem on each side
-box((5.8, 8.6, 1.0), (10.2, 13.6, 9.0), "black")
-for y0 in (12.2, 9.2):
-    box((5.0, y0, -2.0), (5.6, y0 + 0.6, 2.4), "black", rot=("y", 22.5, (5.3, y0 + 0.3, 2.4)))      # left thorns
-    box((10.4, y0, -2.0), (11.0, y0 + 0.6, 2.4), "black", rot=("y", -22.5, (10.7, y0 + 0.3, 2.4)))  # right thorns
-for x0 in (6.8, 8.6):
-    box((x0, 13.4, -2.0), (x0 + 0.6, 14.0, 2.4), "black", rot=("x", 22.5, (x0 + 0.3, 13.7, 2.4)))   # top thorns
-box((5.3, 10.2, 4.4), (5.85, 11.4, 5.6), "crystal")                    # gems
-box((10.15, 10.2, 4.4), (10.7, 11.4, 5.6), "crystal")
-# tall fin with the rune on both faces, capped with a point
-box((7.6, 13.6, 5.0), (8.4, 18.8, 8.6), "black", {"east": "rune", "west": "rune"})
-box((7.62, 18.0, 5.9), (8.38, 19.8, 7.7), "black", rot=("x", 45, (8, 18.9, 6.8)))
-# long stock: a flat body, then a section rising to a flared tail, with a lower plate
-box((6.0, 10.6, 9.0), (10.0, 14.2, 20.0), "black")
-RISE = ("x", -22.5, (8, 13.0, 19.0))
-box((6.2, 11.4, 19.0), (9.8, 14.4, 28.0), "black", rot=RISE)
-box((5.4, 13.6, 25.6), (10.6, 15.2, 29.0), "black", rot=RISE)          # flared tail
-box((6.4, 9.6, 9.1), (9.6, 10.8, 18.0), "black_soft")                  # lower plate
-# tall blade-like front grip with a red inlay down each side
-box((6.8, -9.0, 4.6), (9.2, 8.8, 7.4), "black")
-box((6.7, -7.0, 5.0), (9.3, 6.0, 5.3), "crystal")
-# trigger and the raked rear grip, with a red knob at its top
-box((7.6, 7.8, 13.4), (8.4, 9.6, 14.0), "black_soft")
-GR = ("x", -22.5, (8, 10.0, 17.3))
-box((6.6, 1.0, 16.0), (9.4, 10.0, 18.6), "black", rot=GR)
-box((6.4, 0.2, 15.6), (9.6, 1.0, 19.0), "black_soft", rot=GR)
-box((7.4, 9.0, 14.6), (8.6, 10.0, 15.6), "crystal")
-for e in elements:   # the crystal glows faintly in the dark
-    if any(f["texture"] == "#crystal" for f in e["faces"].values()): e["light_emission"] = 10
-UMBRAL = elements
-
 # ---------------- geometry: radiant ankh (sword) ----------------
 # A sword whose handle and hilt are an ankh: the stem is the grip, the crossbar is the guard, and the loop holds a
 # pane of light; the blade rises from the top of the loop. Its edges carry radiant light. Two textures are animated
@@ -937,16 +846,6 @@ GOO_DISPLAY = {
     "thirdperson_righthand": centred(GOO, (0, 0, 0), 0.5, (0, 3, -2)),
     "thirdperson_lefthand":  centred(GOO, (0, 0, 0), 0.5, (0, 3, -2)),
 }
-UMBRAL_DISPLAY = {
-    "gui":                   centred(UMBRAL, (0, 90, 0), 0.34),
-    "ground":                centred(UMBRAL, (0, 90, 0), 0.26),
-    "fixed":                 centred(UMBRAL, (0, 90, 0), 0.36),
-    "head":                  centred(UMBRAL, (0, 0, 0), 0.4, (0, 8, 0)),
-    "firstperson_righthand": centred(UMBRAL, (0, 0, 0), 0.5, (3, -1, -4)),
-    "firstperson_lefthand":  centred(UMBRAL, (0, 0, 0), 0.5, (3, -1, -4)),
-    "thirdperson_righthand": centred(UMBRAL, (0, 0, 0), 0.5, (0, 3, -1)),
-    "thirdperson_lefthand":  centred(UMBRAL, (0, 0, 0), 0.5, (0, 3, -1)),
-}
 # Held like a sword, the same way as the bat below (the model stands upright where a sword sprite runs corner to corner)
 SWORD_DISPLAY = {
     "gui":                   centred(SWORD, (0, 0, -45), 0.46),
@@ -1005,7 +904,6 @@ write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
 write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
 write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
 write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
-write_item("umbral_lance", UMBRAL, UMB_TEX, UMBRAL_DISPLAY, "black")
 write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
 write_item("stun_grenade", GRENADE, GRENADE_TEX, GRENADE_DISPLAY, "red")
 write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass", GOO_GRENADE_TEX_PATHS)
@@ -1072,7 +970,6 @@ rows = [[render(GUN, TEX, -90, 0), render(GUN, TEX, -130, 18), render(GUN, TEX, 
         [render(SHOTGUN, SG_TEX, -90, 0), render(SHOTGUN, SG_TEX, -130, 18), render(SHOTGUN, SG_TEX, 180, 8), render(SHOTGUN, SG_TEX, -60, -15)],
         [render(PALA, PALA_TEX, -90, 0), render(PALA, PALA_TEX, -130, 18), render(PALA, PALA_TEX, 180, 8), render(PALA, PALA_TEX, -60, -15)],
         [render(GOO, GOO_PREVIEW_TEX, -90, 0), render(GOO, GOO_PREVIEW_TEX, -130, 18), render(GOO, GOO_PREVIEW_TEX, 180, 8), render(GOO, GOO_PREVIEW_TEX, -60, -15)],
-        [render(UMBRAL, UMB_TEX, -90, 0), render(UMBRAL, UMB_TEX, -130, 18), render(UMBRAL, UMB_TEX, 180, 8), render(UMBRAL, UMB_TEX, -60, -15)],
         [render(SWORD, SWORD_TEX, 0, 0, -90), render(SWORD, SWORD_TEX, 30, 20, -90), render(SWORD, SWORD_TEX, 0, 0, 0), render(SWORD, SWORD_TEX, 0, 0, -45)],
         [render(GRENADE, GRENADE_TEX, 0, 0, 0), render(GRENADE, GRENADE_TEX, 35, 15, 0), render(GRENADE, GRENADE_TEX, -90, 0, 0), render(GRENADE, GRENADE_TEX, 120, 15, 0)],
         [render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 0, 0, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 35, 20, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, -90, 0, 0), render(GOO_GRENADE, GOO_GRENADE_PREVIEW_TEX, 120, 20, 0)],

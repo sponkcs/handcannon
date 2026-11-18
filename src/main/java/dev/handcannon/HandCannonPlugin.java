@@ -59,7 +59,6 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
     private NailBat bat;
     private PalaPistol pala;
     private GooCannon goo;
-    private UmbralLance umbral;
     private RadiantAnkh ankh;
     private StunGrenade grenade;
     private GooGrenade gooGrenade;
@@ -77,7 +76,6 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         bat = new NailBat(this);
         pala = new PalaPistol(this);
         goo = new GooCannon(this);
-        umbral = new UmbralLance(this);
         ankh = new RadiantAnkh(this);
         grenade = new StunGrenade(this);
         gooGrenade = new GooGrenade(this);
@@ -85,7 +83,6 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         getServer().getPluginManager().registerEvents(bat, this);
         getServer().getPluginManager().registerEvents(pala, this);
         getServer().getPluginManager().registerEvents(goo, this);
-        getServer().getPluginManager().registerEvents(umbral, this);
         getServer().getPluginManager().registerEvents(ankh, this);
         getServer().getPluginManager().registerEvents(grenade, this);
         getServer().getPluginManager().registerEvents(gooGrenade, this);
@@ -365,17 +362,17 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         String sub = args.length == 0 ? "give" : args[0].toLowerCase();
         switch (sub) {
             case "give" -> {
-                // /hc give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|googrenade|bat] [player] ("ankh" also works) ("umbral" also works); the item can be left out (gun)
+                // /hc give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] [player] ("ankh" also works); the item can be left out (gun)
                 int i = 1;
                 String what = "gun";
-                if (args.length > i && List.of("gun", "tommy", "shotgun", "pala", "goo", "corruption", "umbral", "holy", "ankh", "grenade", "googrenade", "bat").contains(args[i].toLowerCase())) what = args[i++].toLowerCase();
+                if (args.length > i && List.of("gun", "tommy", "shotgun", "pala", "goo", "holy", "ankh", "grenade", "googrenade", "bat").contains(args[i].toLowerCase())) what = args[i++].toLowerCase();
                 Player target;
                 if (args.length > i) target = Bukkit.getPlayerExact(args[i]);
                 else target = sender instanceof Player self ? self : null;
-                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|googrenade|bat] <player>", NamedTextColor.RED)); return true; }
-                ItemStack item = switch (what) { case "bat" -> bat.create(); case "tommy" -> createTommy(); case "shotgun" -> createShotgun(); case "pala" -> pala.create(); case "goo" -> goo.create(); case "corruption", "umbral" -> umbral.create(); case "holy", "ankh" -> ankh.create(); case "grenade" -> grenade.create(1); case "googrenade" -> gooGrenade.create(1); default -> createGun(); };
+                if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] <player>", NamedTextColor.RED)); return true; }
+                ItemStack item = switch (what) { case "bat" -> bat.create(); case "tommy" -> createTommy(); case "shotgun" -> createShotgun(); case "pala" -> pala.create(); case "goo" -> goo.create(); case "holy", "ankh" -> ankh.create(); case "grenade" -> grenade.create(1); case "googrenade" -> gooGrenade.create(1); default -> createGun(); };
                 target.getInventory().addItem(item).values().forEach(left -> target.getWorld().dropItem(target.getLocation(), left));
-                sender.sendMessage(Component.text("Gave a " + switch (what) { case "bat" -> "Nail Bat"; case "tommy" -> "Tommy Gun"; case "shotgun" -> "Double Barrel"; case "pala" -> "Pala-Pistol"; case "goo" -> "Goo Cannon"; case "corruption", "umbral" -> "Corruption Cannon"; case "holy", "ankh" -> "Holy Blade"; case "grenade" -> "Stun Grenade"; case "googrenade" -> "Goo Grenade"; default -> "Hand Cannon"; } + " to " + target.getName(), NamedTextColor.GOLD));
+                sender.sendMessage(Component.text("Gave a " + switch (what) { case "bat" -> "Nail Bat"; case "tommy" -> "Tommy Gun"; case "shotgun" -> "Double Barrel"; case "pala" -> "Pala-Pistol"; case "goo" -> "Goo Cannon"; case "holy", "ankh" -> "Holy Blade"; case "grenade" -> "Stun Grenade"; case "googrenade" -> "Goo Grenade"; default -> "Hand Cannon"; } + " to " + target.getName(), NamedTextColor.GOLD));
             }
             case "reload" -> {
                 reloadConfig();
@@ -386,7 +383,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
                 if (target == null) { sender.sendMessage(Component.text("Usage: /" + label + " pack <player>", NamedTextColor.RED)); return true; }
                 sendPack(target);
             }
-            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|goo|corruption|holy|grenade|googrenade|bat] [player] | reload | pack [player]", NamedTextColor.RED));
+            default -> sender.sendMessage(Component.text("Usage: /" + label + " give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] [player] | reload | pack [player]", NamedTextColor.RED));
         }
         return true;
     }
@@ -397,7 +394,7 @@ public final class HandCannonPlugin extends JavaPlugin implements Listener, TabE
         if (args.length == 1) {
             for (String s : List.of("give", "reload", "pack")) if (s.startsWith(args[0].toLowerCase())) out.add(s);
         } else if (args.length == 2 && args[0].equalsIgnoreCase("give")) {
-            for (String s : List.of("gun", "tommy", "shotgun", "pala", "goo", "corruption", "holy", "grenade", "googrenade", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
+            for (String s : List.of("gun", "tommy", "shotgun", "pala", "goo", "holy", "grenade", "googrenade", "bat")) if (s.startsWith(args[1].toLowerCase())) out.add(s);
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[1].toLowerCase())) out.add(pl.getName());
         } else if (args.length == 3 && args[0].equalsIgnoreCase("give")) {
             for (Player pl : Bukkit.getOnlinePlayers()) if (pl.getName().toLowerCase().startsWith(args[2].toLowerCase())) out.add(pl.getName());

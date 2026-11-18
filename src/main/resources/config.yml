@@ -33,11 +33,6 @@ goo:                        # the Goo Cannon: a glob of honey that traps whateve
   trap-ticks: 70            # how long the target is stuck in goo (20 ticks = 1 s; 70 = 3.5 s)
   break-free-presses: 12    # Shift presses a trapped player needs to break out early
   cooldown-ticks: 20        # time between shots
-umbral:                     # the Corruption Cannon: an instant crimson beam that pierces everything in a line
-  damage: 10.0              # to each target in the beam (10 = five hearts)
-  range: 40                 # blocks, or up to the first wall
-  darkness-ticks: 100       # how long targets get the Darkness effect (20 ticks = 1 s; 0 = off)
-  cooldown-ticks: 24        # time between shots
 holy:                       # the Holy Blade sword (stamped on each sword when it is given; hidden from its tooltip)
   damage: 100.0             # per full-strength hit (100 = fifty hearts)
   attack-speed: 1.6         # swings per second, same as a vanilla sword
