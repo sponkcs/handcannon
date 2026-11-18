@@ -811,8 +811,8 @@ GUN_DISPLAY = {
     "head":                  centred(GUN, (0, 0, 0), 0.6, (0, 8, 0)),
     "firstperson_righthand": centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
     "firstperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (4, -1, -6)),
-    "thirdperson_righthand": centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
-    "thirdperson_lefthand":  centred(GUN, (0, 0, 0), 0.62, (0, 3, -3)),
+    "thirdperson_righthand": held_by(GUN, (90, 90, 0), 0.45, (8, 1.5, 17.0)),
+    "thirdperson_lefthand":  held_by(GUN, (90, -90, 0), 0.45, (8, 1.5, 17.0)),
 }
 # In hand, a model's -z (north) points away from the player, so the guns (built barrel to -z) need no turn.
 TOMMY_DISPLAY = {
@@ -822,8 +822,8 @@ TOMMY_DISPLAY = {
     "head":                  centred(TOMMY, (0, 0, 0), 0.4, (0, 8, 0)),
     "firstperson_righthand": centred(TOMMY, (0, 0, 0), 0.5, (3, -1, -4)),
     "firstperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (3, -1, -4)),
-    "thirdperson_righthand": centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
-    "thirdperson_lefthand":  centred(TOMMY, (0, 0, 0), 0.5, (0, 3, -1)),
+    "thirdperson_righthand": held_by(TOMMY, (90, 90, 0), 0.36, (8, 5.0, 15.2)),
+    "thirdperson_lefthand":  held_by(TOMMY, (90, -90, 0), 0.36, (8, 5.0, 15.2)),
 }
 SHOTGUN_DISPLAY = {
     "gui":                   centred(SHOTGUN, (0, 90, 0), 0.43),
@@ -832,8 +832,8 @@ SHOTGUN_DISPLAY = {
     "head":                  centred(SHOTGUN, (0, 0, 0), 0.4, (0, 8, 0)),
     "firstperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
     "firstperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (3, -1, -4)),
-    "thirdperson_righthand": centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
-    "thirdperson_lefthand":  centred(SHOTGUN, (0, 0, 0), 0.5, (0, 3, -1)),
+    "thirdperson_righthand": held_by(SHOTGUN, (90, 90, 0), 0.42, (8, 4.6, 17.2)),
+    "thirdperson_lefthand":  held_by(SHOTGUN, (90, -90, 0), 0.42, (8, 4.6, 17.2)),
 }
 PALA_DISPLAY = {
     "gui":                   centred(PALA, (0, 90, 0), 0.5),
