@@ -39,7 +39,7 @@ grenade:                    # the Stun Grenade (roleplay): left-click pulls the 
   pin-fuse-ticks: 60        # fuse from pulling the pin to the pop (20 ticks = 1 s; 60 = 3 s)
   lob-forward: 0.6          # how far forward the easy underarm lob goes
   lob-up: 0.35              # how high it goes
-  flash-ticks: 8            # how long the soft glow takes to fade
+  sparkle-ticks: 30         # how long the flurries of sparkles and the glow last after the pop (20 ticks = 1 s)
 goo-grenade:                # the Goo Grenade: a thrown flask that leaves a slowing puddle of goo (no damage)
   radius: 3.0               # blocks from where it smashes
   duration-ticks: 160       # how long the puddle lasts (20 ticks = 1 s; 160 = 8 s)

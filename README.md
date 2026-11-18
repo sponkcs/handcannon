@@ -25,7 +25,7 @@ person, third person, the inventory and item frames is the `DISPLAY` table near 
 change a rotation, nudge or scale, re-run the script and re-host the zip.
 
 ## Commands
-    /hc give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat (op)
+    /hc give [gun|tommy|shotgun|pala|goo|holy|flashbang|googrenade|bat] [player]   give a Hand Cannon (default), Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat (op)
     /hc reload              reload config.yml (op)
     /hc pack [player]       resend the resource pack (op)
 Permission `handcannon.use` (everyone by default) is needed to fire.
@@ -62,11 +62,12 @@ steel (both are animated textures). It swings like a vanilla sword and does 100 
 flares with light. Damage and speed are stamped on each sword when it is given (`holy:` in `config.yml`) and are
 kept out of its tooltip. `/hc give ankh` still works.
 
-## Stun Grenade
-A roleplay item. Left-click pulls the pin and starts a 3-second fuse (a countdown shows on the action bar);
-right-click throws it in an easy underarm lob straight ahead, no aiming. It tumbles and rolls, and when the fuse runs
-out it pops with a moderate bang, a small puff of smoke, a soft warm sparkle and a gentle glow that fades within half
-a second; held too long, it pops in the hand just the same. It never affects anyone: no damage, blindness, nausea or
+## Flashbang (Stun Grenade)
+A roleplay item, given with `/hc give flashbang` (`grenade` also works). Left-click pulls the pin and starts a
+3-second fuse (a countdown shows on the action bar); right-click throws it in an easy underarm lob straight ahead,
+no aiming. It tumbles and rolls, and when the fuse runs out it pops: a big burst of sparkles, light and smoke, then
+several more flurries of sparkles with twinkling crackles over about a second and a half while the area glows and
+fades. Held too long, it pops in the hand just the same. It never affects anyone: no damage, blindness, nausea or
 screen flash. They stack to 16; each pin pulled and popped uses one. Settings are under `grenade:`.
 
 ## Goo Grenade

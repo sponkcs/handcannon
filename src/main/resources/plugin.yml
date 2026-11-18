@@ -6,7 +6,7 @@ description: "A comically oversized snubnose revolver, a cartoon Tommy gun, a do
 commands:
   handcannon:
     description: Give the Hand Cannon, Tommy Gun, Double Barrel, Pala-Pistol, Goo Cannon, Holy Blade, Stun Grenade, Goo Grenade or Nail Bat, reload the config, or resend the resource pack
-    usage: /handcannon give [gun|tommy|shotgun|pala|goo|holy|grenade|googrenade|bat] [player] | reload | pack [player]
+    usage: /handcannon give [gun|tommy|shotgun|pala|goo|holy|flashbang|googrenade|bat] [player] | reload | pack [player]
     permission: handcannon.admin
     aliases: [hc]
 permissions:

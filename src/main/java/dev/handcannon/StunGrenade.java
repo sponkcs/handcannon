@@ -219,22 +219,44 @@ final class StunGrenade implements Listener {
 
     /**
      * The pop. Purely cosmetic and kept gentle on purpose (it's a roleplay item): no blindness, nausea or other effect
-     * on anyone, no full-screen flash, and a moderate bang. A soft warm sparkle stands in for the flash, and the area
-     * glows briefly, dimming back to normal over a few ticks.
+     * on anyone, no full-screen flash, and a moderate bang. A big burst of sparkles and smoke, then several more
+     * flurries of light and twinkling crackles around the spot over about a second and a half, while the area glows
+     * and then fades back to normal.
      */
     private void pop(Location at) {
         World w = at.getWorld();
-        w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 1.0f, 1.3f);
+        var cfg = plugin.getConfig();
+        int length = Math.max(10, cfg.getInt("grenade.sparkle-ticks", 30));
+        w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 1.0f, 1.2f);
         w.playSound(at, Sound.ENTITY_GENERIC_EXPLODE, SoundCategory.PLAYERS, 0.3f, 1.8f);
-        w.spawnParticle(Particle.CLOUD, at, 10, 0.25, 0.2, 0.25, 0.03);
-        w.spawnParticle(Particle.SMOKE, at, 20, 0.3, 0.2, 0.3, 0.02);
-        w.spawnParticle(Particle.DUST, at, 18, 0.35, 0.3, 0.35, 0, new Particle.DustOptions(Color.fromRGB(255, 236, 170), 1.0f));
-        w.spawnParticle(Particle.END_ROD, at, 8, 0.1, 0.1, 0.1, 0.08);
-        // a moment of soft light: an invisible light block where it popped, dimming step by step and then removed
+        // the main burst
+        w.spawnParticle(Particle.CLOUD, at, 24, 0.5, 0.35, 0.5, 0.05);
+        w.spawnParticle(Particle.SMOKE, at, 30, 0.6, 0.3, 0.6, 0.03);
+        w.spawnParticle(Particle.FIREWORK, at, 40, 0.15, 0.15, 0.15, 0.18);
+        w.spawnParticle(Particle.END_ROD, at, 24, 0.2, 0.2, 0.2, 0.14);
+        w.spawnParticle(Particle.DUST, at, 40, 0.8, 0.6, 0.8, 0, WARM);
+        // then flurries: little bursts of sparkle and light around the spot, each with a twinkling crackle
+        var r = java.util.concurrent.ThreadLocalRandom.current();
+        int flurries = 5;
+        for (int i = 1; i <= flurries; i++) {
+            int when = i * length / (flurries + 1);
+            double spread = 0.6 + i * 0.25;
+            int count = Math.max(6, 22 - i * 3);
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                for (int burst = 0; burst < 2; burst++) {
+                    Location spot = at.clone().add(r.nextDouble(-spread, spread), r.nextDouble(0, spread), r.nextDouble(-spread, spread));
+                    w.spawnParticle(Particle.FIREWORK, spot, count, 0.1, 0.1, 0.1, 0.08);
+                    w.spawnParticle(Particle.END_ROD, spot, count / 2, 0.15, 0.15, 0.15, 0.05);
+                    w.spawnParticle(Particle.DUST, spot, count, 0.3, 0.3, 0.3, 0, WARM);
+                }
+                w.spawnParticle(Particle.SMOKE, at, 6, spread / 2, 0.2, spread / 2, 0.01);
+                w.playSound(at, Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS, 0.7f, 1.0f + r.nextFloat() * 0.6f);
+            }, when);
+        }
+        // the area glows for the whole effect, then fades: an invisible light block that dims step by step
         Block b = at.getBlock();
         if (b.getType() != Material.AIR && b.getType() != Material.CAVE_AIR) return;
-        int ticks = Math.max(1, plugin.getConfig().getInt("grenade.flash-ticks", 8));
-        int[] levels = {12, 9, 6, 3};
+        int[] levels = {14, 13, 12, 12, 11, 10, 9, 8, 6, 4, 2};
         for (int i = 0; i < levels.length; i++) {
             int level = levels[i];
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -243,13 +265,15 @@ final class StunGrenade implements Listener {
                 light.setLevel(level);
                 b.setBlockData(light, false);
                 glowing.add(b);
-            }, (long) i * ticks / levels.length);
+            }, (long) i * length / levels.length);
         }
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (b.getType() == Material.LIGHT) b.setType(Material.AIR, false);
             glowing.remove(b);
-        }, ticks + 1);
+        }, length + 2);
     }
+
+    private static final Particle.DustOptions WARM = new Particle.DustOptions(Color.fromRGB(255, 236, 170), 1.2f);
 
     /** Hoppers can't swallow a live grenade. */
     @EventHandler
