@@ -470,8 +470,8 @@ for hx in (6.6, 8.6):
 # copper capacitor, front cap and the needle emitter with four prongs
 round_prism(8, 10.8, 4.6, -12.0, -8.8, "copper")
 round_prism(8, 10.8, 3.2, -13.0, -12.0, "body")
-box((7.6, 10.4, -16.0), (8.4, 11.2, -13.0), "metal")                 # needle
-box((7.75, 10.55, -16.4), (8.25, 11.05, -16.0), "glow")              # glowing tip
+box((7.6, 10.4, -15.6), (8.4, 11.2, -13.0), "metal")                 # needle
+box((7.75, 10.55, -16.0), (8.25, 11.05, -15.6), "glow")              # glowing tip (models can't reach past -16)
 for dx, dy in ((-2.0, 0), (2.0, 0), (0, -2.0), (0, 2.0)):           # prongs
     box((8 + dx - 0.2, 10.8 + dy - 0.2, -15.0), (8 + dx + 0.2, 10.8 + dy + 0.2, -12.0), "metal")
 # trigger and a raked-back grip with finger grooves
@@ -550,7 +550,8 @@ def tex_gauge():
     return im.resize((64, 64), Image.LANCZOS)
 GOO_TEX = {"steel": tex_metal((178, 182, 190)), "gauge": tex_gauge(), "nozzle": tex_metal((176, 168, 132)), "navy": tex_metal((38, 46, 70)),
            "rubber": tex_ribbed((34, 34, 38)), "glass": tex_glass(), "bore": tex_bore(), "dark": flat((22, 22, 26))}
-for k, im in GOO_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_cannon", k + ".png"))
+# saved with the block textures: Minecraft won't mix item and block textures in one model, and the goo is the honey block
+for k, im in GOO_TEX.items(): im.save(path("assets", NS, "textures", "block", "goo_cannon", k + ".png"))
 GOO_PREVIEW_TEX = dict(GOO_TEX, fluid=tex_honey_standin())
 FULL_UV.add("gauge")
 GOO_TEX_PATHS = {"fluid": "minecraft:block/honey_block_side"}
@@ -745,7 +746,7 @@ def tex_cork():
     for x, y in ((3, 4), (10, 2), (6, 9), (12, 11), (2, 13), (8, 6)): px[x, y] = (120, 80, 44, 255)
     return im
 GOO_GRENADE_TEX = {"glass": tex_glass(), "cork": tex_cork(), "string": tex_metal((220, 210, 180), 0, edge=False)}
-for k, im in GOO_GRENADE_TEX.items(): im.save(path("assets", NS, "textures", "item", "goo_grenade", k + ".png"))
+for k, im in GOO_GRENADE_TEX.items(): im.save(path("assets", NS, "textures", "block", "goo_grenade", k + ".png"))   # with the block textures, as above
 GOO_GRENADE_PREVIEW_TEX = dict(GOO_GRENADE_TEX, fluid=tex_honey_standin(), fluid_top=tex_honey_standin())
 # the goo is Minecraft's own honey block: its side texture round the sides, its top texture on the surface
 GOO_GRENADE_TEX_PATHS = {"fluid": "minecraft:block/honey_block_side", "fluid_top": "minecraft:block/honey_block_top"}
@@ -890,12 +891,18 @@ BAT_DISPLAY = {
     "firstperson_lefthand":  {"rotation": [0, 90, 20], "translation": [1.13, 5.5, 1.13], "scale": [0.62] * 3},
 }
 
-def write_item(name, els, tex, display, particle, paths=None):
-    """paths: texture keys pointed somewhere other than this item's own folder (e.g. a vanilla texture)."""
+def write_item(name, els, tex, display, particle, paths=None, atlas="item"):
+    """paths: texture keys pointed somewhere other than this item's own folder (e.g. a vanilla texture).
+    atlas: "item" or "block", the folder this item's textures are saved in. A model can't mix the two."""
     paths = paths or {}
-    model = {"textures": {**{k: paths.get(k, f"{NS}:item/{name}/{k}") for k in tex}, **paths,
-                          "particle": f"{NS}:item/{name}/{particle}"},
+    model = {"textures": {**{k: paths.get(k, f"{NS}:{atlas}/{name}/{k}") for k in tex}, **paths,
+                          "particle": f"{NS}:{atlas}/{name}/{particle}"},
              "gui_light": "side", "elements": els, "display": display}
+    for e in els:   # Minecraft rejects the whole model if any piece goes outside -16..32
+        for v in e["from"] + e["to"]:
+            if not -16 <= v <= 32: raise SystemExit(f"{name}: a piece goes outside the allowed space: {e['from']} {e['to']}")
+    atlases = {v.split(":", 1)[1].split("/", 1)[0] for v in model["textures"].values()}
+    if len(atlases) > 1: raise SystemExit(f"{name}: mixes item and block textures in one model: {atlases}")
     wjson(path("assets", NS, "models", "item", name + ".json"), model)
     wjson(path("assets", NS, "items", name + ".json"), {"model": {"type": "minecraft:model", "model": f"{NS}:item/{name}"}})
 write_item("hand_cannon", GUN, TEX, GUN_DISPLAY, "frame")
@@ -903,10 +910,10 @@ write_item("nail_bat", BAT, BAT_TEX, BAT_DISPLAY, "wood")
 write_item("tommy_gun", TOMMY, TOMMY_TEX, TOMMY_DISPLAY, "steel")
 write_item("shotgun", SHOTGUN, SG_TEX, SHOTGUN_DISPLAY, "blued")
 write_item("pala_pistol", PALA, PALA_TEX, PALA_DISPLAY, "body")
-write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS)
+write_item("goo_cannon", GOO, GOO_TEX, GOO_DISPLAY, "steel", GOO_TEX_PATHS, atlas="block")
 write_item("radiant_ankh", SWORD, SWORD_TEX, SWORD_DISPLAY, "gold")
 write_item("stun_grenade", GRENADE, GRENADE_TEX, GRENADE_DISPLAY, "red")
-write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass", GOO_GRENADE_TEX_PATHS)
+write_item("goo_grenade", GOO_GRENADE, GOO_GRENADE_TEX, GOO_GRENADE_DISPLAY, "glass", GOO_GRENADE_TEX_PATHS, atlas="block")
 # pack.mcmeta: resource pack format 88 = Minecraft 26.2
 wjson(path("pack.mcmeta"), {"pack": {"description": "HandCannon weapons", "min_format": [88, 0], "max_format": [99, 0]}})
 
